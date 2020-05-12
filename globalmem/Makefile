@@ -25,7 +25,7 @@ modules_install:
 
 insmod:
 	sudo insmod $(MODULE_NAME).ko
-	sudo mknod /dev/gatieme c 300 0
+	sudo mknod /dev/gatieme c 301 0
 	sudo chmod 777 /dev/gatieme
 reinsmod:
 	sudo rmmod $(MODULE_NAME)

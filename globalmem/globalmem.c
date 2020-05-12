@@ -20,7 +20,7 @@
 
 #define GLOBALMEM_SIZE	0x10000	/*全局内存最大40K字节*/
 #define MEM_CLEAR 0x1  /*清0全局内存*/
-#define GLOBALMEM_MAJOR 254    /*预设的globalmem的主设备号*/
+#define GLOBALMEM_MAJOR 301    /*预设的globalmem的主设备号*/
 
 static int globalmem_major = GLOBALMEM_MAJOR;
 
@@ -219,7 +219,7 @@ static const struct file_operations globalmem_fops =
 static void globalmem_setup_cdev(struct globalmem_dev *dev, int index)
 {
     int err, devno = MKDEV(globalmem_major, index);
-
+    pr_info("error : %d    devno : %d\n", err, devno);
     cdev_init(&dev->cdev, &globalmem_fops);
     dev->cdev.owner = THIS_MODULE;
     dev->cdev.ops = &globalmem_fops;

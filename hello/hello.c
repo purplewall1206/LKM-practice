@@ -13,9 +13,12 @@ static char *name = "Bilbo";
 module_param(name, charp, S_IRUGO);
 MODULE_PARM_DESC(name, "The name to display in /var/log/kern.log");
 
+static unsigned long addr = 0x0;
+module_param(addr, ulong, S_IRUGO);
+
 static int __init hello_init(void)
 {
-    pr_info("%s: module loaded at 0x%p\n", MODULE_NAME, hello_init);
+    pr_info("%s: module loaded at 0x%p   0x%lx\n", MODULE_NAME, hello_init, addr);
     pr_info("%s: greetings %s\n", MODULE_NAME, name);
     return 0;
 }
