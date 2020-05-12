@@ -13,6 +13,7 @@
 // #include <linux/version.h>
 
 // 给内核传输一个64位虚拟地址
+// sudo cat /proc/kallsyms | grep modules
 static unsigned long addr = 0x0;
 module_param(addr, ulong, S_IRUGO);
 
@@ -25,8 +26,8 @@ static int __init unload_init(void)
     struct list_head *modules=(struct list_head *)addr;
     struct module *mod=0;
     struct module *list_mod;
-    int i;
-    int zero=0;
+    // int i;
+    // int zero=0;
     
     list_for_each_entry(list_mod,modules,list){
         if(strcmp(list_mod->name,module_name) == 0)
@@ -37,9 +38,9 @@ static int __init unload_init(void)
     mod->state=MODULE_STATE_LIVE;
     uint64_t refcnt = atomic_read(&(mod->refcnt)); 
     pr_info("result : %s   %d   %ld\n", mod->name, mod->state, refcnt);
+    atomic_set(&(mod->refcnt), 1); 
     // for (i = 0; i < NR_CPUS; i++){
     //     // mod->ref[i].count=*(local_t *)&zero;
-    //     mod->refcnt = 0;
     // }
     return 0;
 }
