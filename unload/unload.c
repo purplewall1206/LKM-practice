@@ -38,6 +38,9 @@ static int __init unload_init(void)
     mod->state=MODULE_STATE_LIVE;
     uint64_t refcnt = atomic_read(&(mod->refcnt)); 
     pr_info("result : %s   %d   %ld\n", mod->name, mod->state, refcnt);
+    // 此处有重大疑惑，refcnt值在lsmod中显示为正常值+1
+    // 如果此处将atomic量置为0 则在lsmod中显示为-1
+    // 这个问题亟需解决
     atomic_set(&(mod->refcnt), 1); 
     // for (i = 0; i < NR_CPUS; i++){
     //     // mod->ref[i].count=*(local_t *)&zero;
