@@ -57,7 +57,7 @@ static int globalmem_ioctl(
     unsigned long arg
 )
 {
-    pr_info("globalmem_ioctl legacy\n");
+    // pr_info("globalmem_ioctl legacy\n");
 #else
 //long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
 //long (*compat_ioctl) (struct file *file, unsigned int cmd, unsigned long arg)
@@ -67,7 +67,7 @@ static long globalmem_unlocked_ioctl(
         unsigned long arg)
 {
     struct inode *inode = inode = file_inode(filp);
-    pr_info("globalmem_ioctl unlocked\n");
+    // pr_info("globalmem_ioctl unlocked\n");
 #endif
     struct globalmem_dev *dev = filp->private_data; /*获得设备结构体指针*/
 
@@ -89,7 +89,7 @@ static long globalmem_unlocked_ioctl(
 #else
             mutex_unlock(&dev->mutex);
 #endif
-            printk(KERN_INFO "globalmem is set to zero\n");
+            // printk(KERN_INFO "globalmem is set to zero\n");
             break;
 
       default:
@@ -110,7 +110,7 @@ static ssize_t globalmem_read(
     int ret = 0;
     struct globalmem_dev *dev = filp->private_data; /*获得设备结构体指针*/
 
-    pr_info("read : %ld\n", p);
+    // pr_info("read : %ld\n", p);
 
     if (p >= GLOBALMEM_SIZE) {
         return count ? -ENXIO : 0;
@@ -121,12 +121,14 @@ static ssize_t globalmem_read(
     }
 
     #if !defined(init_MUTEX)
+            // pr_info("semphore read\n");
             if (down_interruptible(&dev->sem))
             {
                 return  - ERESTARTSYS;
             }
 #else
             mutex_lock(&dev->mutex);
+            // pr_info("mutex read\n");
 #endif
 
     if (copy_to_user(buf, (void*)(dev->mem + p), count)) {
@@ -134,7 +136,7 @@ static ssize_t globalmem_read(
     } else {
         *ppos += count;
         ret = count;
-        printk(KERN_INFO "read %d bytes(s) from %ld\n", count, p);
+        // printk(KERN_INFO "read %d bytes(s) from %ld\n", count, p);
     }
 
     #if !defined(init_MUTEX)
@@ -154,7 +156,7 @@ static ssize_t globalmem_write(struct file *filp, const char __user *buf,
     int ret = 0;
     struct globalmem_dev *dev = filp->private_data; /*获得设备结构体指针*/
 
-    pr_info("write : %ld\n", p);
+    // pr_info("write : %ld\n", p);
 
     /*分析和获取有效的写长度*/
     if (p >= GLOBALMEM_SIZE)
@@ -163,13 +165,14 @@ static ssize_t globalmem_write(struct file *filp, const char __user *buf,
       count = GLOBALMEM_SIZE - p;
 
     #if !defined(init_MUTEX)
+            // pr_info("semphore write\n");
             if (down_interruptible(&dev->sem))
             {
                 return  - ERESTARTSYS;
             }
 #else
             mutex_lock(&dev->mutex);
-            pr_info("mutex write\n");
+            // pr_info("mutex write\n");
 #endif
     /*用户空间->内核空间*/
     if (copy_from_user(dev->mem + p, buf, count))
@@ -179,13 +182,12 @@ static ssize_t globalmem_write(struct file *filp, const char __user *buf,
       *ppos += count;
       ret = count;
 
-      printk(KERN_INFO "written %d bytes(s) from %ld\n", count, p);
+    //   printk(KERN_INFO "written %d bytes(s) from %ld\n", count, p);
     }
     #if !defined(init_MUTEX)
             up(&dev->sem); //释放信号量
 #else
             mutex_unlock(&dev->mutex);
-            pr_info("mutex read\n");
 #endif
     return ret;
 }
@@ -256,8 +258,8 @@ static void globalmem_setup_cdev(struct globalmem_dev *dev, int index)
     dev->cdev.owner = THIS_MODULE;
     dev->cdev.ops = &globalmem_fops;
     err = cdev_add(&dev->cdev, devno, 1);
-    if (err)
-      printk(KERN_NOTICE "Error %d adding LED%d", err, index);
+    if (err) {}
+    //   printk(KERN_NOTICE "Error %d adding LED%d", err, index);
 }
 
 /*设备驱动模块加载函数*/
@@ -274,7 +276,7 @@ int globalmem_init(void)
       result = alloc_chrdev_region(&devno, 0, 1, "globalmem");
       globalmem_major = MAJOR(devno);
     }
-    pr_info("request devno : %d\n", result);
+    // pr_info("request devno : %d\n", result);
     if (result < 0)
       return result;
 
@@ -293,7 +295,7 @@ int globalmem_init(void)
     sema_init(&(globalmem_devp->sem), 1);
 #else
     init_MUTEX(&(globalmem_devp->mutex));   /*初始化信号量*/
-    pr_info("initial mutex\n");
+    // pr_info("initial mutex\n");
 #endif
 
     return 0;
