@@ -1,1 +1,1 @@
-cmd_/home/ppw/Documents/modules/globalmem/globalmem.mod := { echo  /home/ppw/Documents/modules/globalmem/globalmem.o; echo; } > /home/ppw/Documents/modules/globalmem/globalmem.mod
+cmd_/home/ppw/Documents/LKM-practice/globalmem/globalmem.mod := { echo  /home/ppw/Documents/LKM-practice/globalmem/globalmem.o; echo; } > /home/ppw/Documents/LKM-practice/globalmem/globalmem.mod

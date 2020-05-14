@@ -1,2 +1,2 @@
-/home/ppw/Documents/modules/globalmem/globalmem.o
+/home/ppw/Documents/LKM-practice/globalmem/globalmem.o
 
