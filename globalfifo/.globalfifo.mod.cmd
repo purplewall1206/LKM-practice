@@ -1,0 +1,1 @@
+cmd_/home/ppw/Documents/LKM-practice/globalfifo/globalfifo.mod := { echo  /home/ppw/Documents/LKM-practice/globalfifo/globalfifo.o; echo; } > /home/ppw/Documents/LKM-practice/globalfifo/globalfifo.mod
