@@ -947,6 +947,12 @@ deps_/home/ppw/Documents/LKM-practice/globalmem_lock/globalmem_lock.o := \
   include/linux/kasan.h \
     $(wildcard include/config/kasan/generic.h) \
   include/generated/uapi/linux/version.h \
+  include/linux/posix-clock.h \
+  include/linux/poll.h \
+  include/uapi/linux/poll.h \
+  arch/x86/include/generated/uapi/asm/poll.h \
+  include/uapi/asm-generic/poll.h \
+  include/uapi/linux/eventpoll.h \
 
 /home/ppw/Documents/LKM-practice/globalmem_lock/globalmem_lock.o: $(deps_/home/ppw/Documents/LKM-practice/globalmem_lock/globalmem_lock.o)
 

@@ -13,6 +13,22 @@
 //#include <asm/system.h>
 #include <asm/uaccess.h>
 
+#include <linux/posix-clock.h>
+
+long timer_end(struct timespec start_time)
+{
+    struct timespec end_time;
+    getrawmonotonic(&end_time);
+    return(end_time.tv_nsec - start_time.tv_nsec);
+}
+
+struct timespec timer_start(void)
+{
+    struct timespec start_time;
+    getrawmonotonic(&start_time);
+    return start_time;
+}
+
 #define GLOBALMEM_SIZE	    0x1000
 #define MEM_CLEAR           0x1     /*清0全局内存*/
 #define GLOBALMEM_MAJOR     300     /*预设的globalmem的主设备号*/
@@ -109,6 +125,7 @@ static ssize_t globalmem_read(
     unsigned int count = size;
     int ret = 0;
     struct globalmem_dev *dev = filp->private_data; /*获得设备结构体指针*/
+    struct timespec ts = timer_start();
 
     // pr_info("read : %ld\n", p);
 
@@ -144,6 +161,9 @@ static ssize_t globalmem_read(
 #else
             mutex_unlock(&dev->mutex);
 #endif
+
+    long tt = timer_end(ts);
+    pr_info("read timer : %ld ns", tt);
     return ret;
 }
 
@@ -155,7 +175,7 @@ static ssize_t globalmem_write(struct file *filp, const char __user *buf,
     unsigned int count = size;
     int ret = 0;
     struct globalmem_dev *dev = filp->private_data; /*获得设备结构体指针*/
-
+    struct timespec ts = timer_start();
     // pr_info("write : %ld\n", p);
 
     /*分析和获取有效的写长度*/
@@ -189,6 +209,9 @@ static ssize_t globalmem_write(struct file *filp, const char __user *buf,
 #else
             mutex_unlock(&dev->mutex);
 #endif
+
+    long tt = timer_end(ts);
+    pr_info("write timer -------------------: %ld ns\n", tt);
     return ret;
 }
 
@@ -267,6 +290,8 @@ int globalmem_init(void)
 {
     int result;
     dev_t devno = MKDEV(globalmem_major, 0);
+
+    pr_info("globalmem_lock start\n");
 
     /* 申请设备号*/
     if (globalmem_major)

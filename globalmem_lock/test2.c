@@ -20,7 +20,7 @@ int main()
     struct timeval start, end;
     long long writetime[10000], readtime[10000], ioctltime[10000];
     long long res[3];
-    for (int i = 0;i < 10000;i++) {
+    for (int i = 0;i < 10;i++) {
         gettimeofday(&start, NULL);
         ret = write(fd, sendbuf, strlen(sendbuf));
         gettimeofday(&end, NULL);
