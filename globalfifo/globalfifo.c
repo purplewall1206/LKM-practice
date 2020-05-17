@@ -17,6 +17,8 @@
 #include <asm/uaccess.h>
 #include <linux/poll.h>
 
+#define GLOBALFIFO_ASYNC
+
 #define GLOBALFIFO_SIZE	    0x1000	    /*  全局fifo最大4K字节          */
 #define FIFO_CLEAR          0x1         /*  清0全局内存的长度           */
 #define GLOBALFIFO_MAJOR    300         /*  预设的globalfifo的主设备号  */
@@ -33,6 +35,7 @@ struct globalfifo_dev
     struct semaphore      sem;                        /*  并发控制用的信号量      */
     wait_queue_head_t     r_wait;                     /*  阻塞读用的等待队列头    */
     wait_queue_head_t     w_wait;                     /*  阻塞写用的等待队列头    */
+    struct fasync_struct *async_queue;
 };
 
 struct globalfifo_dev *globalfifo_devp;             /*  设备结构体指针          */
