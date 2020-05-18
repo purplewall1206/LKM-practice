@@ -49,10 +49,21 @@ int globalfifo_open(struct inode *inode, struct file *filp)
       return 0;
 }
 
+
+// 异步通知
+static int globalfifo_fasync(int fd, struct file* filp, int mode) 
+{
+    struct globalfifo_dev *dev = filp->private_data;
+	return fasync_helper(fd, filp, mode, &dev->async_queue);
+}
+
 /*文件释放函数*/
 int globalfifo_release(struct inode *inode, struct file *filp)
 {
-      return 0;
+    /* 将文件从异步通知列表中删除 */
+    globalfifo_fasync( - 1, filp, 0);
+    pr_info("release triggered\n");
+    return 0;
 }
 
 
@@ -158,7 +169,7 @@ static ssize_t globalfifo_read(
     {
         memcpy(dev->mem, dev->mem + count, dev->current_len - count); //fifo数据前移
         dev->current_len -= count; //有效数据长度减少
-        printk(KERN_INFO "read %d bytes(s),current_len:%d\n", count, dev->current_len);
+        printk(KERN_INFO "read %ld bytes(s),current_len:%d\n", count, dev->current_len);
 
         wake_up_interruptible(&dev->w_wait); //唤醒写等待队列
 
@@ -220,10 +231,13 @@ static ssize_t globalfifo_write(struct file *filp, const char __user *buf,
     else
     {
         dev->current_len += count;
-        printk(KERN_INFO "written %d bytes(s),current_len:%d\n",
+        printk(KERN_INFO "written %ld bytes(s),current_len:%d\n",
                 count, dev->current_len);
 
         wake_up_interruptible(&dev->r_wait); //唤醒读等待队列
+        /* 产生异步读信号 */
+        if (dev->async_queue)
+            kill_fasync(&dev->async_queue, SIGIO, POLL_IN);
 
         ret = count;
     }
@@ -237,6 +251,8 @@ out2:
 
     return ret;
 }
+
+
 
 
 /*文件操作结构体*/
@@ -253,6 +269,7 @@ static const struct file_operations globalfifo_fops =
     .poll = globalfifo_poll,
     .open = globalfifo_open,
     .release = globalfifo_release,
+    .fasync = globalfifo_fasync,
 };
 
 
