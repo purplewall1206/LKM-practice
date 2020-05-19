@@ -2,7 +2,7 @@ import sys
 import os
 
 # 创建工程名
-projectname = 'intrsimulate'
+projectname = 'second'
 
 code = '''
 #include <linux/init.h>
@@ -11,17 +11,18 @@ code = '''
 MODULE_LICENSE("GPL v2");
 MODULE_AUTHOR("ppw");
 #define BUFSIZE  0x1000
-static int intr_major = 300;
-module_param(intr_major, int, S_IRUGO);
+#define MODULE_NAME "%s"
+static int %s_major = 300;
+module_param(%s_major, int, S_IRUGO);
 
 struct %s_dev 
 {
     struct cdev   dev;
     char   buf[BUFSIZE];
     struct mutex mutex;
-}
+};
 
-struct %s_dev*  devp = NULL:
+struct %s_dev*  devp = NULL;
 
 int %s_open(struct inode *inode, struct file *filp) 
 {
@@ -125,7 +126,7 @@ static int __init %s_init(void)
     if (err)
         printk(KERN_NOTICE "Error %%d adding LED%%d", err, 0);
 
-    pr_info("%s simulate loaded at %%p\n", MODULE_NAME, %s_init);
+    pr_info("%s simulate loaded at %%p\\n", MODULE_NAME, %s_init);
 
     init_MUTEX(&(devp->mutex));
     return 0;
@@ -206,7 +207,7 @@ codepath = projectname+'/'+projectname+'.c'
 makefilepath = projectname+'/Makefile'
 
 with open(codepath, 'w') as f:
-    f.write(code%(projectname,projectname,projectname,projectname,
+    f.write(code%(projectname,projectname,projectname,projectname,projectname,
         projectname,projectname,projectname,projectname,projectname,
         projectname,projectname,projectname,projectname,projectname,
         projectname,projectname,projectname,projectname,projectname,
@@ -214,7 +215,7 @@ with open(codepath, 'w') as f:
         projectname,projectname,projectname,projectname,projectname,
         projectname,projectname,projectname,projectname,projectname,projectname,projectname,
         projectname,projectname,projectname,projectname,projectname,
-        projectname,projectname,projectname))
+        projectname,projectname,projectname,projectname,projectname))
 
 with open(makefilepath, 'w') as f:
     f.write(makefile%(projectname,projectname,projectname,
