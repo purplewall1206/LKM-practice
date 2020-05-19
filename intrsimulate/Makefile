@@ -1,4 +1,5 @@
-MODULE_NAME := intr_sim
+
+MODULE_NAME := intrsimulate
 
 
 
@@ -25,20 +26,20 @@ modules_install:
 	make -C $(LINUX_KERNEL_PATH) M=$(CURRENT_PATH) modules_install
 
 insmod:
-	sudo insmod $(MODULE_NAME).ko intr=300
-	sudo mknod /dev/intr_sim c 300 0
-	sudo chmod 666 /dev/intr_sim
+	sudo insmod $(MODULE_NAME).ko intrsimulate_major=300
+	sudo mknod /dev/intrsimulate c 300 0
+	sudo chmod 666 /dev/intrsimulate
 
 rmmod:
 	sudo rmmod $(MODULE_NAME)
-	sudo rm -rf /dev/intr_sim
+	sudo rm -rf /dev/intrsimulate
 
 github:
 	cd $(ROOT) && make github
 
 test :
-	echo "intr_sim" > /dev/intr_sim
-	cat /dev/gatieme
+	echo "test device driver intrsimulate" > /dev/intrsimulate
+	cat /dev/intrsimulate
 
 clean:
 	make -C $(LINUX_KERNEL_PATH) M=$(CURRENT_PATH) clean
@@ -46,8 +47,5 @@ clean:
 
 .PHNOY:
 	modules modules_install clean
-
-
-
+	
 endif
-
