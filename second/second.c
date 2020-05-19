@@ -33,10 +33,13 @@ struct second_dev
 
 struct second_dev*  devp = NULL;
 
-void second_timer_handler(struct timer_list *t)
+static void second_timer_handler(struct timer_list *t)
 {
-    mod_timer(&devp->s_timer, jiffies+HZ);
-    atomic_inc(&devp->counter);
+    pr_info("hello?\n");
+    struct second_dev * sdev = from_timer(sdev, t, s_timer);
+    mod_timer(&sdev->s_timer, jiffies+HZ);
+    pr_info("did you really work?\n");
+    atomic_inc(&sdev->counter);
     printk(KERN_NOTICE "current jiffies is %ld\n", jiffies);
 }
 
@@ -45,14 +48,14 @@ int second_open(struct inode *inode, struct file *filp)
     filp->private_data = devp;
     pr_info("second opened by %d : %s\n", current->pid, current->comm);
     // init_timer(&devp->s_timer);
-    timer_setup(&devp->s_timer, second_timer_handler, devp);
+    timer_setup(&devp->s_timer, second_timer_handler, 0);
     // devp->s_timer.function = &second_timer_handler;
     // devp->s_timer.expires = jiffies + HZ;
-
-    add_timer(&devp->s_timer); /*添加（注册）定时器*/
-
+    pr_info("timer_setup success\n");
+    mod_timer(&devp->s_timer, jiffies+HZ);
+    // add_timer(&devp->s_timer); /*添加（注册）定时器*/
+    pr_info("add_timer success\n");
     atomic_set(&devp->counter,0); //计数清0
-  return 0;
     return 0;
 }
 
@@ -70,10 +73,13 @@ static ssize_t second_read(struct file *filp,char __user *buf,
     int counter;
   
     counter = atomic_read(&devp->counter);
-    if(put_user(counter, (int*)buf))
+    if(put_user(counter, (int*)buf)) {
+        pr_info("read wrong happend\n");
         return - EFAULT;
-    else
-        return sizeof(unsigned int);  
+    } else {
+        pr_info("read ok\n");
+        return sizeof(unsigned int);
+    }  
     // mutex_unlock(&dev->mutex);
     return 0;
 }
