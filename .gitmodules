@@ -1,0 +1,3 @@
+[submodule "sblkdev"]
+	path = sblkdev
+	url = https://github.com/purplewall1206/sblkdev.git
