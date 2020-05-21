@@ -21,6 +21,10 @@
 #include <linux/blkdev.h>
 #include <linux/buffer_head.h>	/* invalidate_bdev */
 #include <linux/bio.h>
+#include <linux/blk-mq.h>
+#include <linux/blk_types.h>
+#include <linux/stat.h>
+#include <linux/device.h>
 
 MODULE_LICENSE("Dual BSD/GPL");
 
@@ -111,107 +115,165 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 /*
  * The simple form of the request function.
  */
-static void sbull_request(struct request_queue *q)
-{
-	struct request *req;
-	int ret;
+// static void sbull_request(struct request_queue *q)
+// {
+// 	struct request *req;
+// 	int ret;
 
-	req = blk_fetch_request(q);
-	while (req) {
-		struct sbull_dev *dev = req->rq_disk->private_data;
-		if (blk_rq_is_passthrough(req)) {
-			printk (KERN_NOTICE "Skip non-fs request\n");
-			ret = -EIO;
-			goto done;
-		}
-		printk (KERN_NOTICE "Req dev %u dir %d sec %lld, nr %d\n",
-			(unsigned)(dev - Devices), rq_data_dir(req),
-			blk_rq_pos(req), blk_rq_cur_sectors(req));
-		sbull_transfer(dev, blk_rq_pos(req), blk_rq_cur_sectors(req),
-				bio_data(req->bio), rq_data_dir(req));
-		ret = 0;
-	done:
-		if(!__blk_end_request_cur(req, ret)){
-			req = blk_fetch_request(q);
-		}
-	}
+// 	req = blk_fetch_request(q);
+// 	while (req) {
+// 		struct sbull_dev *dev = req->rq_disk->private_data;
+// 		if (blk_rq_is_passthrough(req)) {
+// 			printk (KERN_NOTICE "Skip non-fs request\n");
+// 			ret = -EIO;
+// 			goto done;
+// 		}
+// 		printk (KERN_NOTICE "Req dev %u dir %d sec %lld, nr %d\n",
+// 			(unsigned)(dev - Devices), rq_data_dir(req),
+// 			blk_rq_pos(req), blk_rq_cur_sectors(req));
+// 		sbull_transfer(dev, blk_rq_pos(req), blk_rq_cur_sectors(req),
+// 				bio_data(req->bio), rq_data_dir(req));
+// 		ret = 0;
+// 	done:
+// 		if(!__blk_end_request_cur(req, ret)){
+// 			req = blk_fetch_request(q);
+// 		}
+// 	}
+// }
+
+static int do_simple_request(struct request *rq, unsigned int *nr_bytes)
+{
+    int ret = 0;
+    struct bio_vec bvec;
+    struct req_iterator iter;
+    struct sbull_dev *dev = rq->q->queuedata;
+    loff_t pos = blk_rq_pos(rq);
+    loff_t dev_size = (loff_t)(dev->size);
+
+    printk(KERN_WARNING "sblkdev: request start from sector %lld \n", blk_rq_pos(rq));
+    
+    rq_for_each_segment(bvec, rq, iter)
+    {
+        unsigned long b_len = bvec.bv_len;
+
+        void* b_buf = page_address(bvec.bv_page) + bvec.bv_offset;
+
+        if ((pos + b_len) > dev_size)
+            b_len = (unsigned long)(dev_size - pos);
+
+        if (rq_data_dir(rq))//WRITE
+            memcpy(dev->data + pos, b_buf, b_len);
+        else//READ
+            memcpy(b_buf, dev->data + pos, b_len);
+
+        pos += b_len;
+        *nr_bytes += b_len;
+    }
+
+    return ret;
 }
+
+static blk_status_t _queue_rq(struct blk_mq_hw_ctx *hctx, const struct blk_mq_queue_data* bd)
+{
+	unsigned int nr_bytes = 0;
+    blk_status_t status = BLK_STS_OK;
+    struct request *rq = bd->rq;
+
+    //we cannot use any locks that make the thread sleep
+    blk_mq_start_request(rq);
+
+    if (do_simple_request(rq, &nr_bytes) != 0)
+        status = BLK_STS_IOERR;
+
+    printk(KERN_WARNING "sblkdev: request process %d bytes\n", nr_bytes);
+
+    if (blk_update_request(rq, status, nr_bytes)) //GPL-only symbol
+        BUG();
+    __blk_mq_end_request(rq, status);
+
+    return BLK_STS_OK;//always return ok
+}
+
+static struct blk_mq_ops sbull_mq_ops = {
+	.queue_rq = _queue_rq,
+};
+
 
 /*
  * Transfer a single BIO.
  */
-static int sbull_xfer_bio(struct sbull_dev *dev, struct bio *bio)
-{
-	struct bio_vec bvec;
-	struct bvec_iter iter;
-	sector_t sector = bio->bi_iter.bi_sector;
+// static int sbull_xfer_bio(struct sbull_dev *dev, struct bio *bio)
+// {
+// 	struct bio_vec bvec;
+// 	struct bvec_iter iter;
+// 	sector_t sector = bio->bi_iter.bi_sector;
 
-	/* Do each segment independently. */
-	bio_for_each_segment(bvec, bio, iter) {
-		char *buffer = kmap_atomic(bvec.bv_page) + bvec.bv_offset;
-		sbull_transfer(dev, sector,bytes_to_sectors_checked(bio_cur_bytes(bio)),
-				buffer, bio_data_dir(bio) == WRITE);
-		sector += (bytes_to_sectors_checked(bio_cur_bytes(bio)));
-		kunmap_atomic(buffer);
-	}
-	return 0; /* Always "succeed" */
-}
+// 	/* Do each segment independently. */
+// 	bio_for_each_segment(bvec, bio, iter) {
+// 		char *buffer = kmap_atomic(bvec.bv_page) + bvec.bv_offset;
+// 		sbull_transfer(dev, sector,bytes_to_sectors_checked(bio_cur_bytes(bio)),
+// 				buffer, bio_data_dir(bio) == WRITE);
+// 		sector += (bytes_to_sectors_checked(bio_cur_bytes(bio)));
+// 		kunmap_atomic(buffer);
+// 	}
+// 	return 0; /* Always "succeed" */
+// }
 
 
 /*
  * Transfer a full request.
  */
-static int sbull_xfer_request(struct sbull_dev *dev, struct request *req)
-{
-	struct bio *bio;
-	int nsect = 0;
+// static int sbull_xfer_request(struct sbull_dev *dev, struct request *req)
+// {
+// 	struct bio *bio;
+// 	int nsect = 0;
     
-	__rq_for_each_bio(bio, req) {
-		sbull_xfer_bio(dev, bio);
-		nsect += bio->bi_iter.bi_size/KERNEL_SECTOR_SIZE;
-	}
-	return nsect;
-}
+// 	__rq_for_each_bio(bio, req) {
+// 		sbull_xfer_bio(dev, bio);
+// 		nsect += bio->bi_iter.bi_size/KERNEL_SECTOR_SIZE;
+// 	}
+// 	return nsect;
+// }
 
 
 
 /*
  * Smarter request function that "handles clustering".
  */
-static void sbull_full_request(struct request_queue *q)
-{
-	struct request *req;
-	struct sbull_dev *dev = q->queuedata;
-	int ret;
+// static void sbull_full_request(struct request_queue *q)
+// {
+// 	struct request *req;
+// 	struct sbull_dev *dev = q->queuedata;
+// 	int ret;
 
-	while ((req = blk_fetch_request(q)) != NULL) {
-		if (blk_rq_is_passthrough(req)) {
-			printk (KERN_NOTICE "Skip non-fs request\n");
-			ret = -EIO;
-			goto done;
-		}
-		sbull_xfer_request(dev, req);
-		ret = 0;
-	done:
-		__blk_end_request_all(req, ret);
-	}
-}
+// 	while ((req = blk_fetch_request(q)) != NULL) {
+// 		if (blk_rq_is_passthrough(req)) {
+// 			printk (KERN_NOTICE "Skip non-fs request\n");
+// 			ret = -EIO;
+// 			goto done;
+// 		}
+// 		sbull_xfer_request(dev, req);
+// 		ret = 0;
+// 	done:
+// 		__blk_end_request_all(req, ret);
+// 	}
+// }
 
 
 
 /*
  * The direct make request version.
  */
-static blk_qc_t sbull_make_request(struct request_queue *q, struct bio *bio)
-{
-	struct sbull_dev *dev = q->queuedata;
-	int status;
+// static blk_qc_t sbull_make_request(struct request_queue *q, struct bio *bio)
+// {
+// 	struct sbull_dev *dev = q->queuedata;
+// 	int status;
 
-	status = sbull_xfer_bio(dev, bio);
-	bio->bi_status = status;
-	bio_endio(bio);
-	return BLK_QC_T_NONE;
-}
+// 	status = sbull_xfer_bio(dev, bio);
+// 	bio->bi_status = status;
+// 	bio_endio(bio);
+// 	return BLK_QC_T_NONE;
+// }
 
 
 /*
@@ -222,12 +284,12 @@ static int sbull_open(struct block_device *bdev, fmode_t mode)
 {
 	struct sbull_dev *dev = bdev->bd_disk->private_data;
 
-	del_timer_sync(&dev->timer);
-	spin_lock(&dev->lock);
+	// del_timer_sync(&dev->timer);
+	// spin_lock(&dev->lock);
 	if (! dev->users) 
 		check_disk_change(bdev);
 	dev->users++;
-	spin_unlock(&dev->lock);
+	// spin_unlock(&dev->lock);
 	return 0;
 }
 
@@ -235,14 +297,14 @@ static void sbull_release(struct gendisk *disk, fmode_t mode)
 {
 	struct sbull_dev *dev = disk->private_data;
 
-	spin_lock(&dev->lock);
+	// spin_lock(&dev->lock);
 	dev->users--;
 
 	if (!dev->users) {
 		dev->timer.expires = jiffies + INVALIDATE_DELAY;
-		add_timer(&dev->timer);
+		// add_timer(&dev->timer);
 	}
-	spin_unlock(&dev->lock);
+	// spin_unlock(&dev->lock);
 
 }
 
@@ -260,32 +322,32 @@ int sbull_media_changed(struct gendisk *gd)
  * Revalidate.  WE DO NOT TAKE THE LOCK HERE, for fear of deadlocking
  * with open.  That needs to be reevaluated.
  */
-int sbull_revalidate(struct gendisk *gd)
-{
-	struct sbull_dev *dev = gd->private_data;
+// int sbull_revalidate(struct gendisk *gd)
+// {
+// 	struct sbull_dev *dev = gd->private_data;
 	
-	if (dev->media_change) {
-		dev->media_change = 0;
-		memset (dev->data, 0, dev->size);
-	}
-	return 0;
-}
+// 	if (dev->media_change) {
+// 		dev->media_change = 0;
+// 		memset (dev->data, 0, dev->size);
+// 	}
+// 	return 0;
+// }
 
 /*
  * The "invalidate" function runs out of the device timer; it sets
  * a flag to simulate the removal of the media.
  */
-void sbull_invalidate(struct timer_list* arg)
-{
-	struct sbull_dev *dev = from_timer(dev, arg, timer);
+// void sbull_invalidate(struct timer_list* arg)
+// {
+// 	struct sbull_dev *dev = from_timer(dev, arg, timer);
 
-	spin_lock(&dev->lock);
-	if (dev->users || !dev->data) 
-		printk (KERN_WARNING "sbull: timer sanity check failed\n");
-	else
-		dev->media_change = 1;
-	spin_unlock(&dev->lock);
-}
+// 	spin_lock(&dev->lock);
+// 	if (dev->users || !dev->data) 
+// 		printk (KERN_WARNING "sbull: timer sanity check failed\n");
+// 	else
+// 		dev->media_change = 1;
+// 	spin_unlock(&dev->lock);
+// }
 
 /*
  * The ioctl() implementation
@@ -330,7 +392,7 @@ static struct block_device_operations sbull_ops = {
 	.open 	         = sbull_open,
 	.release 	 = sbull_release,
 	.media_changed   = sbull_media_changed,
-	.revalidate_disk = sbull_revalidate,
+	// .revalidate_disk = sbull_revalidate,
 	.ioctl	         = sbull_ioctl
 };
 
@@ -340,6 +402,7 @@ static struct block_device_operations sbull_ops = {
  */
 static void setup_device(struct sbull_dev *dev, int which)
 {
+	int ret = 0;
 	/*
 	 * Get some memory.
 	 */
@@ -350,42 +413,64 @@ static void setup_device(struct sbull_dev *dev, int which)
 		printk (KERN_NOTICE "vmalloc failure.\n");
 		return;
 	}
-	spin_lock_init(&dev->lock);
+	// spin_lock_init(&dev->lock);
 	
 	/*
 	 * The timer which "invalidates" the device.
 	 */
-	timer_setup(&dev->timer, sbull_invalidate, 0);
+	// timer_setup(&dev->timer, sbull_invalidate, 0);
 	
 	/*
 	 * The I/O queue, depending on whether we are using our own
 	 * make_request function or not.
 	 */
 	switch (request_mode) {
-	    case RM_NOQUEUE:
-		dev->queue = blk_alloc_queue(GFP_KERNEL);
-		if (dev->queue == NULL)
-			goto out_vfree;
-		blk_queue_make_request(dev->queue, sbull_make_request);
-		break;
+		// 暂时不考虑，sbull——load里面也是默认载入RM_SIMPLE的
+	    // case RM_NOQUEUE:
+		// dev->queue = blk_alloc_queue(GFP_KERNEL);
+		// if (dev->queue == NULL)
+		// 	goto out_vfree;
+		// blk_queue_make_request(dev->queue, sbull_make_request);
+		// break;
 
-	    case RM_FULL:
-		dev->queue = blk_init_queue(sbull_full_request, &dev->lock);
-		if (dev->queue == NULL)
-			goto out_vfree;
-		break;
+	    // case RM_FULL:
+		// dev->queue = blk_init_queue(sbull_full_request, &dev->lock);
+		// if (dev->queue == NULL)
+		// 	goto out_vfree;
+		// break;
 
 	    default:
 		printk(KERN_NOTICE "Bad request mode %d, using simple\n", request_mode);
         	/* fall into.. */
 	
 	    case RM_SIMPLE:
-		dev->queue = blk_init_queue(sbull_request, &dev->lock);
-		if (dev->queue == NULL)
-			goto out_vfree;
+		// dev->queue = blk_init_queue(sbull_request, &dev->lock);
+		// if (dev->queue == NULL)
+		// 	goto out_vfree;
+			dev->tag_set.ops = &sbull_mq_ops;
+            dev->tag_set.nr_hw_queues = 1;
+            dev->tag_set.queue_depth = 128;
+            dev->tag_set.numa_node = NUMA_NO_NODE;
+            dev->tag_set.cmd_size = sizeof(int);
+            dev->tag_set.flags = BLK_MQ_F_SHOULD_MERGE;
+            dev->tag_set.driver_data = dev;
+
+            ret = blk_mq_alloc_tag_set(&dev->tag_set);
+            if (ret) {
+                printk(KERN_WARNING "sblkdev: unable to allocate tag set\n");
+                break;
+            }
+
+			struct request_queue *queue = blk_mq_init_queue(&dev->tag_set);
+            if (IS_ERR(queue)) {
+                ret = PTR_ERR(queue);
+                printk(KERN_WARNING "sblkdev: Failed to allocate queue\n");
+                break;
+            }
+            dev->queue = queue;
 		break;
 	}
-	blk_queue_logical_block_size(dev->queue, hardsect_size);
+	// blk_queue_logical_block_size(dev->queue, hardsect_size);
 	dev->queue->queuedata = dev;
 	/*
 	 * And the gendisk structure.
@@ -446,19 +531,23 @@ static void sbull_exit(void)
 	for (i = 0; i < ndevices; i++) {
 		struct sbull_dev *dev = Devices + i;
 
-		del_timer_sync(&dev->timer);
+		// del_timer_sync(&dev->timer);
 		if (dev->gd) {
 			del_gendisk(dev->gd);
 			put_disk(dev->gd);
 		}
 		if (dev->queue) {
-			if (request_mode == RM_NOQUEUE)
-				blk_put_queue(dev->queue);
-			else
+			// if (request_mode == RM_NOQUEUE)
+			// 	blk_put_queue(dev->queue);
+			// else
 				blk_cleanup_queue(dev->queue);
 		}
 		if (dev->data)
 			vfree(dev->data);
+
+		if (dev->tag_set.tags) {
+			blk_mq_free_tag_set(&dev->tag_set);
+		}
 	}
 	unregister_blkdev(sbull_major, "sbull");
 	kfree(Devices);
