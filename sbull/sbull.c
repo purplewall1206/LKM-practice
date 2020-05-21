@@ -67,14 +67,15 @@ module_param(request_mode, int, 0);
  * The internal representation of our device.
  */
 struct sbull_dev {
-        int size;                       /* Device size in sectors */
+        unsigned int size;                       /* Device size in sectors */
         u8 *data;                       /* The data array */
         short users;                    /* How many users */
         short media_change;             /* Flag a media change? */
-        spinlock_t lock;                /* For mutual exclusion */
+        // spinlock_t lock;                /* For mutual exclusion */
         struct request_queue *queue;    /* The device request queue */
         struct gendisk *gd;             /* The gendisk structure */
         struct timer_list timer;        /* For simulated media changes */
+		struct blk_mq_tag_set tag_set;
 };
 
 static struct sbull_dev *Devices = NULL;
