@@ -9,6 +9,6 @@
 #include <uapi/linux/hdreg.h> //for struct hd_geometry
 #include <uapi/linux/cdrom.h> //for CDROM_GET_CAPABILITY
 
-// 重新设计vmem_disk 能够任意配置内核申请的内存大小
+// 重新设计vmem_disk 能够任意配置内核申请的内存大小,最好是能够放在write里面动态申请，删除掉之前的，再创建新的
 // 争取一个主设备下面能够分配多个子设备
 

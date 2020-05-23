@@ -32,8 +32,23 @@ static const struct address_space_operations simplefs_aops;
 
 将文件设计成文件块，将索引和数据直接保存在一起，当文件块表示目录时，文件块中的数据块保存目录索引。
 
-```
+整个文件系统中共存在256 个文件块，也就是说文件+目录的最大数量不能超过256个
 
+```
+struct dir_entry {
+    char name[MAX_NAME];
+    int index;
+}
+
+struct file_block {
+    int used;
+    umode_t mode;
+    union {
+        int dir_children;
+        int filelen;
+    }
+    char buf[MAX_SIZE];
+}
 ```
 
 ### 3. 具体实现中问题
