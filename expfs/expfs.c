@@ -37,11 +37,32 @@ int usedBlks = 0; // 统计已经使用的文件块数量
 
 struct expfs_fileblock *blks;  // 存储文件块
 
+// 填充超级块
+static int expfs_fill_super(struct super_block *sb, void *data, int silent) 
+{
+    int ret;
+
+    return ret;
+}
+
+// 挂载
+static struct dentry *expfs_mount (struct file_system_type *fs_type, int flags,
+		       const char *dev_name, void *data) 
+{
+    return mount_nodev(fs_type, flags, data, expfs_fill_super);
+}
+
+static void expfs_kill_sb (struct super_block *sb)
+{
+    kill_anon_super(sb);
+}
+
+
 static struct file_system_type expfs_type = {
     .owner = THIS_MODULE,
     .name = "expfs",
-    // .mount = expfs_mount,
-    // .kill_sb = expfs_kill_sb,
+    .mount = expfs_mount,
+    .kill_sb = expfs_kill_sb,
 };
 
 static int __init expfs_init(void)
