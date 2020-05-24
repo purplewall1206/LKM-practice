@@ -12,6 +12,7 @@
 #include <linux/vmalloc.h>
 #include <linux/time.h>
 #include <linux/time64.h>
+#include <linux/uaccess.h>
 
 MODULE_LICENSE("GPL");
 
@@ -60,7 +61,30 @@ static int getblock (void)
     return -1;
 }
 
+static struct inode * expfs_geti(struct super_block *sb, int index) 
+{
+    struct inode *inode;
+    struct expfs_fileblock *blk;
+    inode = new_inode(sb);
+    inode->i_ino = index;
+    inode->i_sb = sb;
+    inode->i_op = &expfs_iops;
 
+    blk = blks[index];
+
+    if (S_ISDIR(blk->mode)) {
+        inode->i_fop = &expfs_dir_fops;
+    } else if (S_ISREG(blk->mode)) {
+        inode->i_fop = &expfs_fops;
+    }
+
+    struct timespec64 current_time;
+    ktime_get_ts64(current_time);
+    inode->i_atime = inode->i_ctime = inode->i_mtime = current_time;
+    inode->i_private = blk;
+
+    return inode;
+}
 
 /*=============== dir file operations =========================*/
 
@@ -97,14 +121,37 @@ const struct file_operations expfs_dir_fops = {
 
 /*=============== file operations =========================*/
 
-ssize_t expfs_read (struct file *, char __user *, size_t, loff_t *)
+ssize_t expfs_read (struct file *filp, char __user * buf, size_t len, loff_t *ppos)
 {
-
+    struct expfs_fileblock *blk;
+    char *buffer;
+    blk = (struct expfs_fileblock *) file_dentry(filp)->d_inode->i_private;
+    pr_info("%s : read file i_no %d\n", __func__, blk->index);
+    buffer = (char *) blk->data;
+    len = min((size_t)blk->filesize, len);
+    if (copy_to_user(buf, buffer, len)) {
+        return -EFAULT;
+    }
+    *ppos += len;
+    return len;
 }
 
-ssize_t expfs_write (struct file *, const char __user *, size_t, loff_t *)
+ssize_t expfs_write (struct file * filp, const char __user * buf, size_t len, loff_t * ppos)
 {
+    struct expfs_fileblock *blk;
+    char *buffer;
+    blk = (struct expfs_fileblock *) file_dentry(filp)->d_inode->i_private;
+    pr_info("%s : write file i_no %d\n", __func__, blk->index);
+    buffer = (char *) blk->data;
+    buffer += *ppos;
 
+    if (copy_from_user(buffer, buf, len)) {
+        return -EFAULT;
+    }
+    *ppos += len;
+    blk->filesize = *ppos;
+
+    return len;
 }
 
 const struct file_operations expfs_fops = {
@@ -112,6 +159,110 @@ const struct file_operations expfs_fops = {
     .write = expfs_write,
 }
 
+/*================= inode operations ====================*/
+
+static int expfs_do_create(struct inode *dir, struct dentry *dentry, umode_t mode)
+{
+    struct inode *inode;
+    struct super_block *sb = dir->i_sb;
+    struct expfs_direntry *entry;
+    struct expfs_fileblock *blk, *pblk;
+    int idx ;
+
+    if (usedBlks >= MAX_FILE) 
+        return -EINVAL;
+    IF (!S_ISDIR(mode) && !S_ISREG(mode))
+        return -EINVAL;
+
+    inode = new_inode(sb);
+    if (!inode)
+        return -ENOMEM;
+
+    inode->i_sb = sb;
+    inode->i_op = &expfs_iops;
+    struct timespec64 current_time;
+    ktime_get_ts64(current_time);
+    inode->i_atime = inode->i_ctime = inode->i_mtime = current_time;
+
+    idx = getblock();
+    blk = &blks[idx];
+    inode->i_no = idx;
+    blk->mode = mode;
+    usedBlks++;
+
+    if (S_ISDIR(mode)) {
+        blk->dir_children = 0;
+        inode->i_fop = &expfs_dir_fops;
+    } else (S_ISREG(mode)) {
+        blk->filesize  = 0;
+        inode->i_fop = &expfs_fops;
+    }
+
+    inode->i_private = blk;
+    pblk = (struct expfs_fileblock * ) dir->i_private;
+
+    entry = (struct expfs_direntry *) pblk->buffer;
+    entry += pblk->dir_children;
+    pblk->dir_children++;
+    entry->index = idx;
+    strcpy(entry->name, dentry->d_name.name);
+
+    inode_init_owner(inode, dir, mode);
+    d_add(dentry, inode);
+
+    return 0;
+}
+
+struct dentry * expfs_lookup (struct inode *parent_inode,struct dentry *child_dentry, unsigned int flags)
+{
+    struct super_block *sb;
+    struct expfs_fileblock *blk;
+    struct expfs_direntry *entry;
+
+    blk = (struct expfs_fileblock *) parent_inode->i_private;
+    pr_info("%s expfs lookup index %d\n", __func__, blk->index);
+    entry = (struct expfs_direntry *) blk->buffer;
+    for (int i = 0;i < blk->dir_children;i++) {
+        if (!strcmp(entry[i].name, child_dentry->d_name.name)) {
+            struct inode *inode = expfs_geti(sb, entry[i].index);
+            struct expfs_fileblock *inner = (struct expfs_fileblock *) inode->i_private;
+            inode_init_owner(inode, parent_inode, inner->mode);
+            d_add(child_dentry, inode);
+            return NULL;
+        }
+    }
+    return NULL;
+}
+int expfs_create (struct inode * dir,struct dentry * dentry, umode_t mode, bool excl)
+{
+    pr_info("%s\n", __func__);
+    return expfs_do_create(dir, dentry, mode);
+}
+
+// int expfs_unlink (struct inode *,struct dentry *);
+
+int expfs_mkdir (struct inode *dir ,struct dentry *dentry, umode_t mode) 
+{
+    pr_info("%s\n", __func__);
+    return expfs_do_create(dir, dentry, S_IFDIR | mode);
+}
+
+int expfs_rmdir (struct inode *dir,struct dentry *dentry)
+{
+    pr_info("%s\n", __func__);
+    struct inode *inode = dentry->d_inode;
+    struct expfs_fileblock *blk = (struct expfs_fileblock * ) inode->i_private;
+    blk->used = 0;
+    return simple_rmdir(dir, dentry);
+}
+
+
+const struct inode_operations expfs_iops = {
+    .create = expfs_create,
+    .mkdir = expfs_mkdir,
+    .rmdir = expfs_rmdir,
+    .lookup = expfs_lookup,
+};
 
 
 
