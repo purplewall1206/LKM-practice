@@ -13,6 +13,7 @@
 #include <linux/time.h>
 #include <linux/time64.h>
 #include <linux/uaccess.h>
+#include <linux/delay.h>
 
 MODULE_LICENSE("GPL");
 
@@ -90,6 +91,7 @@ static struct inode * expfs_geti(struct super_block *sb, int index)
 
 static int expfs_iterate(struct file *filp, struct dir_context *ctx)
 {
+    mdelay(2000);
     struct expfs_fileblock *blk;
     struct expfs_direntry *entry;
     int i;
@@ -139,10 +141,11 @@ ssize_t expfs_read (struct file *filp, char __user * buf, size_t len, loff_t *pp
 
 ssize_t expfs_write (struct file * filp, const char __user * buf, size_t len, loff_t * ppos)
 {
+    pr_info("%s : filename %s\n",__func__, filp->f_path.dentry->d_name.name);
     struct expfs_fileblock *blk;
     char *buffer;
     blk = (struct expfs_fileblock *) filp->f_path.dentry->d_inode->i_private;
-    pr_info("%s : write file i_no %d\n", __func__, blk->index);
+    pr_info("%s : write file i_no %d  %d\n", __func__, blk->index, filp->f_path.dentry->d_inode->i_ino);
     buffer = (char *) blk->buffer;
     buffer += *ppos;
 
@@ -188,22 +191,22 @@ static int expfs_do_create(struct inode *dir, struct dentry *dentry, umode_t mod
     idx = getblock();
     blk = &blks[idx];
     inode->i_ino = idx;
+    blk->index = idx;
     blk->mode = mode;
     usedBlks++;
+    pr_info("%s get block index %d, used blocks %d\n", __func__, idx, usedBlks);
 
     if (S_ISDIR(mode)) {
         blk->dir_children = 0;
         inode->i_fop = &expfs_dir_fops;
-
     } else if (S_ISREG(mode)) {
-
         blk->filesize  = 0;
         inode->i_fop = &expfs_fops;
     }
 
     inode->i_private = blk;
     pblk = (struct expfs_fileblock * ) dir->i_private;
-
+    pr_info("%s pblk : %d\n", __func__, pblk->index);
     entry = (struct expfs_direntry *) pblk->buffer;
     entry += pblk->dir_children;
     pblk->dir_children++;
@@ -223,7 +226,7 @@ struct dentry * expfs_lookup (struct inode *parent_inode,struct dentry *child_de
     struct expfs_direntry *entry;
 
     blk = (struct expfs_fileblock *) parent_inode->i_private;
-    pr_info("%s expfs lookup index %d\n", __func__, blk->index);
+    pr_info("%s expfs lookup index %d, childname: %s\n", __func__, blk->index, child_dentry->d_name.name);
     entry = (struct expfs_direntry *) blk->buffer;
     for (int i = 0;i < blk->dir_children;i++) {
         if (!strcmp(entry[i].name, child_dentry->d_name.name)) {
@@ -239,7 +242,7 @@ struct dentry * expfs_lookup (struct inode *parent_inode,struct dentry *child_de
 
 int expfs_create (struct inode * dir,struct dentry * dentry, umode_t mode, bool excl)
 {
-    pr_info("%s\n", __func__);
+    pr_info("%s  inode : %d, dentryname : %s\n", __func__, dir->i_ino, dentry->d_name.name);
     return expfs_do_create(dir, dentry, mode);
 }
 

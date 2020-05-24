@@ -12,3 +12,15 @@ default:
 
 clean:
 	$(MAKE) -C $(KBUILD) M=$(PWD) clean
+
+load:
+	sudo dmesg -C
+	sudo insmod expfs.ko
+	sudo mount -t expfs none ./mnt/
+	sudo chmod -R 777 mnt/
+	cd mnt
+
+unload:
+	sudo umount ./mnt
+	sudo rmmod expfs
+	

@@ -852,6 +852,9 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
   arch/x86/include/asm/smap.h \
   arch/x86/include/asm/extable.h \
   arch/x86/include/asm/uaccess_64.h \
+  include/linux/delay.h \
+  arch/x86/include/asm/delay.h \
+  include/asm-generic/delay.h \
 
 /home/ppw/Documents/LKM-practice/expfs/expfs.o: $(deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o)
 
