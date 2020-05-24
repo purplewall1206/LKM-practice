@@ -51,7 +51,7 @@ const struct file_operations expfs_dir_fops;
 // 获取空文件块
 static int getblock (void)
 {
-    for (int i = 1;i < MAX_FILE;i++) {
+    for (int i = 2;i < MAX_FILE;i++) {
         if (blks[i].used != 1) {
             blks[i].used = 1;
             return i;
@@ -95,18 +95,19 @@ static int expfs_iterate(struct file *filp, struct dir_context *ctx)
     int i;
     // struct super_block *sb = filp->f_inode->i_sb;
 
-	printk(KERN_INFO "expfs : Iterate on inode [%lu]\n",
-	       filp->f_inode->i_ino);
+	printk(KERN_INFO "%s : Iterate on inode [%lu]\n",
+	       __func__, filp->f_inode->i_ino);
 
     // blk = (struct expfs_fileblock *) filp->f_path.dentry->d_inode->i_private;
-    blk = (struct expfs_fileblock *) file_dentry(filp)->d_inode->i_private;
+    blk = (struct expfs_fileblock *) filp->f_path.dentry->d_inode->i_private;
 
     if (!S_ISDIR(blk->mode))
         return -ENOTDIR;
 
     entry = (struct expfs_direntry *) &blk->buffer;
+    pr_info("%s mode:%d,  dir_children:%d\n", __func__, S_ISDIR(blk->mode), blk->dir_children);
     for (i = 0;i < blk->dir_children;i++) {
-        pr_info("expfs %s iterate  %d  : %s\n", __func__, entry[i].index, entry[i].name);
+        // pr_info("expfs %s iterate  %d  : %s\n", __func__, entry[i].index, entry[i].name);
         dir_emit(ctx, entry[i].name, sizeof(struct expfs_fileblock), entry[i].index, DT_UNKNOWN);
         ++ctx->pos;
     }
@@ -125,7 +126,7 @@ ssize_t expfs_read (struct file *filp, char __user * buf, size_t len, loff_t *pp
 {
     struct expfs_fileblock *blk;
     char *buffer;
-    blk = (struct expfs_fileblock *) file_dentry(filp)->d_inode->i_private;
+    blk = (struct expfs_fileblock *) filp->f_path.dentry->d_inode->i_private;
     pr_info("%s : read file i_no %d\n", __func__, blk->index);
     buffer = (char *) blk->buffer;
     len = min((size_t)blk->filesize, len);
@@ -140,7 +141,7 @@ ssize_t expfs_write (struct file * filp, const char __user * buf, size_t len, lo
 {
     struct expfs_fileblock *blk;
     char *buffer;
-    blk = (struct expfs_fileblock *) file_dentry(filp)->d_inode->i_private;
+    blk = (struct expfs_fileblock *) filp->f_path.dentry->d_inode->i_private;
     pr_info("%s : write file i_no %d\n", __func__, blk->index);
     buffer = (char *) blk->buffer;
     buffer += *ppos;
@@ -288,11 +289,12 @@ int expfs_fill_super(struct super_block *sb, void *data, int silent)
     ktime_get_ts64(&curr);
     root_inode->i_atime = root_inode->i_mtime = root_inode->i_ctime = curr;
     
-    blks[0].mode = mode;
-    blks[0].dir_children = 0;
-    blks[0].index = 0;
-    blks[0].used = 1;
-    root_inode->i_private = &blks[0];
+    // iterate 函数显示 file指针里面的inode->i_ino 为1 ，所以这里必须定义为1
+    blks[1].mode = mode;
+    blks[1].dir_children = 0;
+    blks[1].index = 1;
+    blks[1].used = 1;
+    root_inode->i_private = &blks[1];
 
     sb->s_root = d_make_root(root_inode);
     usedBlks++;
