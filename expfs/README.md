@@ -13,7 +13,7 @@ struct file_system_type simplefs_fs_type;
 static const struct super_operations simplefs_ops;
 // 文件相关
 const struct file_operations simplefs_file_operations；
-const struct inode_operations simplefs_file_inode_operations；
+<del>const struct inode_operations simplefs_file_inode_operations；</del>
 // 目录相关
 const struct file_operations simplefs_dir_operations；
 const struct inode_operations simplefs_dir_inode_operations；
