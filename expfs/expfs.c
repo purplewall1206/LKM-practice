@@ -36,7 +36,7 @@ struct expfs_fileblock
         int filesize;
         int dir_children;
     };
-    char buffer[0];
+    char buffer[256];
 };
 
 int usedBlks = 0; // 统计已经使用的文件块数量
@@ -53,7 +53,8 @@ const struct file_operations expfs_dir_fops;
 static int getblock (void)
 {
     for (int i = 2;i < MAX_FILE;i++) {
-        if (blks[i].used != 1) {
+        pr_info("%s: %d used %d\n", __func__, i, blks[i].used);
+        if (blks[i].used == 0) {
             blks[i].used = 1;
             return i;
         }
@@ -204,6 +205,7 @@ static int expfs_do_create(struct inode *dir, struct dentry *dentry, umode_t mod
     inode->i_ino = idx;
     blk->index = idx;
     blk->mode = mode;
+    blk->used = 1;
     usedBlks++;
     pr_info("%s get block index %d, used blocks %d\n", __func__, idx, usedBlks);
 
@@ -366,8 +368,8 @@ static int __init expfs_init(void)
     // unsigned int blksize = sizeof(struct expfs_fileblock) * MAX_FILE;
     // usedBlks = 0;
 
-    blks = vmalloc(512 * MAX_FILE);
-    memset(blks, 0, 512 * MAX_FILE);
+    blks = vmalloc((sizeof(struct expfs_fileblock)) * MAX_FILE);
+    memset(blks, 0, (sizeof(struct expfs_fileblock)) * MAX_FILE);
     ret = register_filesystem(&expfs_type);
     if (ret) {
         pr_err("register filesystem failed\n");
