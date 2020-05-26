@@ -127,13 +127,23 @@ struct xxx *x = kmalloc ((sizeof(struct xxx) + length) * SIZE);
 ### 4. 可以进一步实现的目标
 
 * 代码优化，拆分到多个文件里面
+* 遍历时添加当前目录和上级目录，注意i_ino为1的时候没有上级目录
 * 增加动态申请文件数
 * 给fileblock的操作加锁
 * 删除文件夹
 * 重命名
 * iterate 循环经常崩溃的地方试着加入异常抛出（新版代码可能没有）
 
+```
+[ 1248.657816] expfs_iterate : Iterate on inode [1]
+[ 1248.657817] expfs_iterate mode:1,  dir_children:2
+[ 1248.657818] expfs expfs_iterate iterate  2  : d
+[ 1248.657819] expfs expfs_iterate iterate  3  : e
+[ 1248.657833] BUG: kernel NULL pointer dereference, address: 0000000000000030
+[ 1248.657836] #PF: supervisor read access in kernel mode
+[ 1248.657837] #PF: error_code(0x0000) - not-present page
 
+```
 
 
 
