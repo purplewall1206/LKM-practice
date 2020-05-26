@@ -20,6 +20,7 @@ MODULE_LICENSE("GPL");
 #define MAX_BUF 256
 #define MAX_FILE 50
 #define MAX_NAME 50
+#define BUFFER_SIZE 256
 
 struct expfs_direntry
 {
@@ -36,7 +37,7 @@ struct expfs_fileblock
         int filesize;
         int dir_children;
     };
-    char buffer[256];
+    char buffer[BUFFER_SIZE];
 };
 
 int usedBlks = 0; // 统计已经使用的文件块数量
@@ -89,11 +90,11 @@ static struct inode * expfs_geti(struct super_block *sb, int index)
 }
 
 /*=============== dir file operations =========================*/
-int count_iter = 0;
+// int count_iter = 0;
 static int expfs_iterate(struct file *filp, struct dir_context *ctx)
 {
     // mdelay(2000);
-    pr_info("%s  repeat %d\n", __func__, count_iter++);
+    // pr_info("%s  repeat %d\n", __func__, count_iter++);
     struct expfs_fileblock *blk;
     struct expfs_direntry *entry;
     // int i;
@@ -112,6 +113,9 @@ static int expfs_iterate(struct file *filp, struct dir_context *ctx)
 
     entry = (struct expfs_direntry *) &blk->buffer[0];
     pr_info("%s mode:%d,  dir_children:%d\n", __func__, S_ISDIR(blk->mode), blk->dir_children);
+    if (!dir_emit_dots(filp, ctx)) {
+        pr_err("%s current or upper directory load failed\n", __func__);
+    } 
     for (int i = 0;i < blk->dir_children;i++) {
         pr_info("expfs %s iterate  %d  : %s\n", __func__, entry[i].index, entry[i].name);
         dir_emit(ctx, entry[i].name, sizeof(entry[i].name), entry[i].index, DT_UNKNOWN);
@@ -282,6 +286,7 @@ int expfs_unlink(struct inode *dir, struct dentry *dentry)
     struct expfs_fileblock *blk = inode->i_private;
     struct expfs_fileblock *pblk = dir->i_private;
     struct expfs_direntry *entry;
+    pr_info("%s unlink : %s\n", __func__, dentry->d_name.name);
 
     entry = (struct expfs_direntry *)&pblk->buffer[0];
     for (int i = 0;i < pblk->dir_children;i++) {
