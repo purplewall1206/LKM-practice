@@ -41,7 +41,7 @@ struct expfs_fileblock
 
 int usedBlks = 0; // 统计已经使用的文件块数量
 
-struct expfs_fileblock blks[MAX_FILE];  // 存储文件块 [0]->superblock  [1]->welcomefile
+struct expfs_fileblock * blks;  // 存储文件块 [0]->superblock  [1]->welcomefile
 
 const struct inode_operations expfs_iops;
 
@@ -143,6 +143,7 @@ ssize_t expfs_read (struct file *filp, char __user * buf, size_t len, loff_t *pp
     if (copy_to_user(buf, buffer, len)) {
         return -EFAULT;
     }
+
     *ppos += len;
     return len;
 }
@@ -236,7 +237,7 @@ struct dentry * expfs_lookup (struct inode *parent_inode,struct dentry *child_de
     struct expfs_direntry *entry;
 
     blk = (struct expfs_fileblock *) parent_inode->i_private;
-    pr_info("%s expfs lookup index %d, childname: %s\n", __func__, blk->index, child_dentry->d_name.name);
+    // pr_info("%s expfs lookup index %d, childname: %s\n", __func__, blk->index, child_dentry->d_name.name);
     entry = (struct expfs_direntry *) &blk->buffer[0];
     for (int i = 0;i < blk->dir_children;i++) {
         if (!strcmp(entry[i].name, child_dentry->d_name.name)) {
@@ -365,8 +366,8 @@ static int __init expfs_init(void)
     // unsigned int blksize = sizeof(struct expfs_fileblock) * MAX_FILE;
     // usedBlks = 0;
 
-    // blks = vmalloc(blksize);
-    memset(blks, 0, sizeof(blks));
+    blks = vmalloc(512 * MAX_FILE);
+    memset(blks, 0, 512 * MAX_FILE);
     ret = register_filesystem(&expfs_type);
     if (ret) {
         pr_err("register filesystem failed\n");
