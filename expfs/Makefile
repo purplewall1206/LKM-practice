@@ -16,11 +16,11 @@ clean:
 load:
 	sudo dmesg -C
 	sudo insmod expfs.ko
-	sudo mount -t expfs none ./mnt/
-	sudo chmod -R 777 mnt/
-	cd mnt
+	sudo mount -t expfs none ~/Documents/testmnt/
+	sudo chmod -R 777 ~/Documents/testmnt/
+	sudo chown -R ppw:ppw ~/Documents/testmnt/
 
 unload:
-	sudo umount ./mnt
+	sudo umount ~/Documents/testmnt/
 	sudo rmmod expfs
 	

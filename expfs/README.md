@@ -143,6 +143,18 @@ struct xxx *x = kmalloc ((sizeof(struct xxx) + length) * SIZE);
 [ 1248.657836] #PF: supervisor read access in kernel mode
 [ 1248.657837] #PF: error_code(0x0000) - not-present page
 
+
+[11877.310151] Call Trace:
+[11877.310210]  simple_unlink+0x46/0x60
+[11877.310212]  simple_rmdir+0x34/0x50
+[11877.310234]  expfs_rmdir+0x43/0x49 [expfs]
+[11877.310237]  vfs_rmdir+0x86/0x1a0
+[11877.310238]  do_rmdir+0x18c/0x1c0
+[11877.310240]  __x64_sys_unlinkat+0x45/0x60
+[11877.315722]  do_syscall_64+0x57/0x190
+[11877.315789]  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+[11877.315806] RIP: 0033:0x7fa1cc287f9b
+
 ```
 
 

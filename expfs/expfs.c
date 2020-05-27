@@ -243,7 +243,7 @@ struct dentry * expfs_lookup (struct inode *parent_inode,struct dentry *child_de
     struct expfs_direntry *entry;
 
     blk = (struct expfs_fileblock *) parent_inode->i_private;
-    // pr_info("%s expfs lookup index %d, childname: %s\n", __func__, blk->index, child_dentry->d_name.name);
+    pr_info("%s expfs lookup index %d, childname: %p\n", __func__, blk->index, child_dentry->d_name.name);
     entry = (struct expfs_direntry *) &blk->buffer[0];
     for (int i = 0;i < blk->dir_children;i++) {
         if (!strcmp(entry[i].name, child_dentry->d_name.name)) {
@@ -273,11 +273,43 @@ int expfs_mkdir (struct inode *dir ,struct dentry *dentry, umode_t mode)
 
 int expfs_rmdir (struct inode *dir,struct dentry *dentry)
 {
-    pr_info("%s\n", __func__);
     struct inode *inode = dentry->d_inode;
+    pr_info("%s dir inode:%ld\n", __func__, inode->i_ino);
     struct expfs_fileblock *blk = (struct expfs_fileblock * ) inode->i_private;
-    blk->used = 0;
-    return simple_rmdir(dir, dentry);
+    struct expfs_fileblock *pblk = dir->i_private;
+    int ret = 0;
+    // blk->used = 0;
+
+    // TODO
+    // 1. check empty
+    pr_info("%s parent blk-> index:%d, mode:%d, children:%d\n", __func__, blk->index, S_ISDIR(blk->mode), blk->dir_children);
+    pr_info("%s blk -> index:%d, mode:%d, children:%d\n", __func__, blk->index, S_ISDIR(blk->mode), blk->dir_children);
+    struct expfs_direntry *entry = (struct expfs_direntry *) pblk->buffer;
+
+    // 2. is empty dir?
+    if (S_ISDIR(blk->mode) && blk->dir_children == 0) {
+        blk->used = 0;
+
+        // parent entry erase
+        for (int i = 0;i < pblk->dir_children;i++) {
+            if (!strcmp(entry[i].name, dentry->d_name.name)) {
+                for (int j = i;j < pblk->dir_children-1; j++) {
+                    memcpy(&entry[j], &entry[j+1], sizeof(struct expfs_direntry));
+                }
+                pblk->dir_children--;
+                break;
+            }
+        }
+
+        ret = simple_rmdir(dir, dentry);
+        pr_info("%s simple_rmdir ret:%d\n", __func__, ret);
+
+    } else {
+        pr_info("%s dir not empty\n", __func__);
+        return -ENOTEMPTY;
+    }
+    // return simple_rmdir(dir, dentry);
+    return ret;
 }
 
 int expfs_unlink(struct inode *dir, struct dentry *dentry)
