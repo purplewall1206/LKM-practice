@@ -131,6 +131,9 @@ struct xxx *x = kmalloc ((sizeof(struct xxx) + length) * SIZE);
 * 增加动态申请文件数
 * 给fileblock的操作加锁
 * 删除文件夹
+* 创建时间正确
+* 修改时间正确
+* 修改读写便宜（read write llseek）
 * 重命名
 * iterate 循环经常崩溃的地方试着加入异常抛出（新版代码可能没有）
 

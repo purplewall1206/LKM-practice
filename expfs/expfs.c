@@ -81,9 +81,9 @@ static struct inode * expfs_geti(struct super_block *sb, int index)
         inode->i_fop = &expfs_fops;
     }
 
-    struct timespec64 current_time;
-    ktime_get_ts64(&current_time);
-    inode->i_atime = inode->i_ctime = inode->i_mtime = current_time;
+    // struct timespec64 current_time;
+    // ktime_get_ts64(&current_time);
+    inode->i_atime = inode->i_ctime = inode->i_mtime = current_time(inode);
     inode->i_private = blk;
 
     return inode;
@@ -200,9 +200,9 @@ static int expfs_do_create(struct inode *dir, struct dentry *dentry, umode_t mod
 
     inode->i_sb = sb;
     inode->i_op = &expfs_iops;
-    struct timespec64 current_time;
-    ktime_get_ts64(&current_time);
-    inode->i_atime = inode->i_ctime = inode->i_mtime = current_time;
+    // struct timespec64 current_time;
+    // ktime_get_ts64(&current_time);
+    inode->i_atime = inode->i_ctime = inode->i_mtime = current_time(inode);
 
     idx = getblock();
     blk = &blks[idx];
@@ -352,7 +352,7 @@ int expfs_fill_super(struct super_block *sb, void *data, int silent)
     int ret = 0;
     struct inode *root_inode;
     mode_t mode = S_IFDIR;
-    struct timespec64 curr;
+    // struct timespec64 curr;
 
     root_inode = new_inode(sb);
     root_inode->i_ino = 1;
@@ -360,8 +360,8 @@ int expfs_fill_super(struct super_block *sb, void *data, int silent)
     root_inode->i_sb = sb;
     root_inode->i_op = &expfs_iops;
     root_inode->i_fop = &expfs_dir_fops;
-    ktime_get_ts64(&curr);
-    root_inode->i_atime = root_inode->i_mtime = root_inode->i_ctime = curr;
+    // ktime_get_ts64(&curr);
+    root_inode->i_atime = root_inode->i_mtime = root_inode->i_ctime = current_time(root_inode);
     
     // iterate 函数显示 file指针里面的inode->i_ino 为1 ，所以这里必须定义为1
     blks[1].mode = mode;
