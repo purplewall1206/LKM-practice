@@ -54,7 +54,7 @@ const struct file_operations expfs_dir_fops;
 static int getblock (void)
 {
     for (int i = 2;i < MAX_FILE;i++) {
-        pr_info("%s: %d used %d\n", __func__, i, blks[i].used);
+        // pr_info("%s: %d used %d\n", __func__, i, blks[i].used);
         if (blks[i].used == 0) {
             blks[i].used = 1;
             return i;
@@ -102,8 +102,8 @@ static int expfs_iterate(struct file *filp, struct dir_context *ctx)
     loff_t pos = filp->f_pos;
     if (pos) return 0;
 
-	printk(KERN_INFO "%s : Iterate on inode [%lu]\n",
-	       __func__, filp->f_inode->i_ino);
+	// printk(KERN_INFO "%s : Iterate on inode [%lu]\n",
+	//        __func__, filp->f_inode->i_ino);
 
     // blk = (struct expfs_fileblock *) filp->f_path.dentry->d_inode->i_private;
     blk = (struct expfs_fileblock *) filp->f_path.dentry->d_inode->i_private;
@@ -112,12 +112,12 @@ static int expfs_iterate(struct file *filp, struct dir_context *ctx)
         return -ENOTDIR;
 
     entry = (struct expfs_direntry *) &blk->buffer[0];
-    pr_info("%s mode:%d,  dir_children:%d\n", __func__, S_ISDIR(blk->mode), blk->dir_children);
+    // pr_info("%s mode:%d,  dir_children:%d\n", __func__, S_ISDIR(blk->mode), blk->dir_children);
     if (!dir_emit_dots(filp, ctx)) {
         pr_err("%s current or upper directory load failed\n", __func__);
     } 
     for (int i = 0;i < blk->dir_children;i++) {
-        pr_info("expfs %s iterate  %d  : %s\n", __func__, entry[i].index, entry[i].name);
+        // pr_info("expfs %s iterate  %d  : %s\n", __func__, entry[i].index, entry[i].name);
         dir_emit(ctx, entry[i].name, sizeof(entry[i].name), entry[i].index, DT_UNKNOWN);
         ++ctx->pos;
         filp->f_pos += sizeof(struct expfs_direntry);
@@ -176,7 +176,7 @@ ssize_t expfs_write (struct file * filp, const char __user * buf, size_t len, lo
     if (copy_from_user(blk->buffer + p, buf, count)) {
         ret =  -EFAULT;
     } else {
-        pr_info("%s buffer %p:%s \n --%p:%s\n", __func__, buffer,buffer, blk->buffer, blk->buffer);
+        pr_info("%s buffer %p:%s\n", __func__,  blk->buffer, blk->buffer);
         *ppos += count;
         ret = count;
         blk->filesize = *ppos;
