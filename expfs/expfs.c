@@ -155,28 +155,69 @@ ssize_t expfs_read (struct file *filp, char __user * buf, size_t len, loff_t *pp
 
 ssize_t expfs_write (struct file * filp, const char __user * buf, size_t len, loff_t * ppos)
 {
-    pr_info("%s : filename %s, content:%s,len:%ld\n",__func__, filp->f_path.dentry->d_name.name, buf, len);
+    pr_info("%s : filename %s, content:%s,len:%ld,pos:%lld\n",__func__, filp->f_path.dentry->d_name.name, buf, len, *ppos);
     struct expfs_fileblock *blk;
     char *buffer;
+    int ret = 0;
+    unsigned long p = *ppos;
+    unsigned int count = len;
     blk = (struct expfs_fileblock *) filp->f_path.dentry->d_inode->i_private;
-    pr_info("%s : write file i_no %d  %ld\n", __func__, blk->index, filp->f_path.dentry->d_inode->i_ino);
-    buffer = (char *) &blk->buffer[0];
-    buffer += *ppos;
+    // pr_info("%s : write file i_no %d  %ld\n", __func__, blk->index, filp->f_path.dentry->d_inode->i_ino);
+    // buffer = (char *) &blk->buffer[0];
+    // pr_info("old postion : %p  : %s\n", buffer, buffer);
+    // buffer += *ppos;
+    // pr_info("new position : %p\n", buffer);
+    if (p >= BUFFER_SIZE)
+        return count ? -ENXIO : 0;
+    if (count > BUFFER_SIZE - p)
+        count = BUFFER_SIZE - p;
 
-    if (copy_from_user(buffer, buf, len)) {
-        return -EFAULT;
+    // if (copy_from_user(buffer, buf, len)) {
+    if (copy_from_user(blk->buffer + p, buf, count)) {
+        ret =  -EFAULT;
+    } else {
+        pr_info("%s buffer %p:%s \n --%p:%s\n", __func__, buffer,buffer, blk->buffer, blk->buffer);
+        *ppos += count;
+        ret = count;
+        blk->filesize = *ppos;
     }
-    // strcpy(blk->buffer, buffer);
-    pr_info("%s buffer %s \n --%s\n", __func__, buffer, blk->buffer);
-    *ppos += len;
-    blk->filesize = *ppos;
 
-    return len;
+    return ret;
+}
+static loff_t expfs_llseek (struct file * filp, loff_t offset, int orig)
+{
+    loff_t ret = 0;
+    pr_info("%s offset:%lld, orig:%d\n", __func__, offset, orig);
+    switch(orig)
+    {
+        case 0:
+            if(offset < 0 || offset > BUFFER_SIZE) {
+                ret = - EINVAL;
+                break;
+            }
+            filp->f_pos = offset;
+            ret = filp->f_pos;
+            break;
+        case 1:
+            if ( ((filp->f_pos + offset) > BUFFER_SIZE) ||
+                 ((filp->f_pos + offset) < 0)  ) {
+                     ret = -EINVAL;
+                     break;
+            }
+            filp->f_pos += offset;
+            ret = (loff_t) filp->f_pos;
+            break;
+        default:
+            ret = - EINVAL;
+            break;
+    }
+    return ret;
 }
 
 const struct file_operations expfs_fops = {
     .read = expfs_read,
     .write = expfs_write,
+    .llseek = expfs_llseek,
 };
 
 /*================= inode operations ====================*/
