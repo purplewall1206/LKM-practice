@@ -284,7 +284,7 @@ struct dentry * expfs_lookup (struct inode *parent_inode,struct dentry *child_de
     struct expfs_direntry *entry;
 
     blk = (struct expfs_fileblock *) parent_inode->i_private;
-    pr_info("%s expfs lookup index %d, childname: %p\n", __func__, blk->index, child_dentry->d_name.name);
+    pr_info("%s expfs lookup index %d, childnameaddr: %p\n", __func__, blk->index, child_dentry->d_name.name);
     entry = (struct expfs_direntry *) &blk->buffer[0];
     for (int i = 0;i < blk->dir_children;i++) {
         if (!strcmp(entry[i].name, child_dentry->d_name.name)) {
@@ -375,12 +375,45 @@ int expfs_unlink(struct inode *dir, struct dentry *dentry)
     return simple_unlink(dir, dentry);
 }
 
+int expfs_rename(struct inode *old_dir, struct dentry *old_dentry,
+		  struct inode *new_dir, struct dentry *new_dentry,
+		  unsigned int flags) 
+{
+    struct expfs_fileblock *old_blk = old_dir->i_private;
+    struct expfs_fileblock *new_blk = new_dir->i_private;
+    struct expfs_direntry *old_entry = old_blk->buffer;
+    struct expfs_direntry *new_entry = new_blk->buffer;
+    pr_info("%s flags:%d old_dir:%ld/%d, old_dentry:%s\nnew_dir:%ld/%d, new_dentry:%s\n",
+            __func__, flags, old_dir->i_ino, old_blk->index, old_dentry->d_name.name,
+            new_dir->i_ino, new_blk->index, new_dentry->d_name.name);
+    
+    // delete old, add new
+    for (int i = 0;i < old_blk->dir_children;i++) {
+        if (!strcmp(old_entry[i].name, old_dentry->d_name.name)) {
+            for (int j = i;j < old_blk->dir_children-1;j++) {
+                memcpy(&old_entry[j], &old_entry[j+1], sizeof(struct expfs_direntry));
+            }
+            old_blk->dir_children--;
+            break;
+        }
+    }
+
+
+    int ret = simple_rename(old_dir, old_dentry, new_dir, new_dentry, flags);
+    WARN_ON(ret == -EINVAL);
+    WARN_ON(ret == -ENOTEMPTY);
+    return ret;
+}
+
+
+
 const struct inode_operations expfs_iops = {
     .create = expfs_create,
     .mkdir = expfs_mkdir,
     .rmdir = expfs_rmdir,
     .lookup = expfs_lookup,
     .unlink = expfs_unlink,
+    .rename = expfs_rename,
 };
 
 
