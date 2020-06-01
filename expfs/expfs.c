@@ -157,7 +157,7 @@ ssize_t expfs_write (struct file * filp, const char __user * buf, size_t len, lo
 {
     pr_info("%s : filename %s, content:%s,len:%ld,pos:%lld\n",__func__, filp->f_path.dentry->d_name.name, buf, len, *ppos);
     struct expfs_fileblock *blk;
-    char *buffer;
+    // char *buffer;
     int ret = 0;
     unsigned long p = *ppos;
     unsigned int count = len;
@@ -381,8 +381,9 @@ int expfs_rename(struct inode *old_dir, struct dentry *old_dentry,
 {
     struct expfs_fileblock *old_blk = old_dir->i_private;
     struct expfs_fileblock *new_blk = new_dir->i_private;
-    struct expfs_direntry *old_entry = old_blk->buffer;
-    struct expfs_direntry *new_entry = new_blk->buffer;
+    struct expfs_direntry *old_entry = (struct expfs_direntry *)old_blk->buffer;
+    struct expfs_direntry *new_entry = (struct expfs_direntry *)new_blk->buffer;
+    struct inode *curr;
     pr_info("%s flags:%d old_dir:%ld/%d, old_dentry:%s\nnew_dir:%ld/%d, new_dentry:%s\n",
             __func__, flags, old_dir->i_ino, old_blk->index, old_dentry->d_name.name,
             new_dir->i_ino, new_blk->index, new_dentry->d_name.name);
@@ -390,6 +391,7 @@ int expfs_rename(struct inode *old_dir, struct dentry *old_dentry,
     // delete old, add new
     for (int i = 0;i < old_blk->dir_children;i++) {
         if (!strcmp(old_entry[i].name, old_dentry->d_name.name)) {
+            curr = expfs_geti(old_dir->i_sb, old_entry[i].index);
             for (int j = i;j < old_blk->dir_children-1;j++) {
                 memcpy(&old_entry[j], &old_entry[j+1], sizeof(struct expfs_direntry));
             }
@@ -397,6 +399,13 @@ int expfs_rename(struct inode *old_dir, struct dentry *old_dentry,
             break;
         }
     }
+    pr_info("%s delete old entry -> index:%ld\ndir_children len:%d/%d\n",
+             __func__, curr->i_ino, old_blk->dir_children,new_blk->dir_children);
+    new_entry += new_blk->dir_children;
+    new_blk->dir_children++;
+    new_entry->index = curr->i_ino;
+    strcpy(new_entry->name, new_dentry->d_name.name);
+    pr_info("%s new index:%d, name:%s\n", __func__, new_entry->index, new_entry->name);
 
 
     int ret = simple_rename(old_dir, old_dentry, new_dir, new_dentry, flags);
