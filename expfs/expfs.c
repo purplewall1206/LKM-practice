@@ -399,13 +399,13 @@ int expfs_rename(struct inode *old_dir, struct dentry *old_dentry,
             break;
         }
     }
-    pr_info("%s delete old entry -> index:%ld\ndir_children len:%d/%d\n",
-             __func__, curr->i_ino, old_blk->dir_children,new_blk->dir_children);
+    // pr_info("%s delete old entry -> index:%ld\ndir_children len:%d/%d\n",
+    //          __func__, curr->i_ino, old_blk->dir_children,new_blk->dir_children);
     new_entry += new_blk->dir_children;
     new_blk->dir_children++;
     new_entry->index = curr->i_ino;
     strcpy(new_entry->name, new_dentry->d_name.name);
-    pr_info("%s new index:%d, name:%s\n", __func__, new_entry->index, new_entry->name);
+    // pr_info("%s new index:%d, name:%s\n", __func__, new_entry->index, new_entry->name);
 
 
     int ret = simple_rename(old_dir, old_dentry, new_dir, new_dentry, flags);
@@ -414,6 +414,12 @@ int expfs_rename(struct inode *old_dir, struct dentry *old_dentry,
     return ret;
 }
 
+// TODO
+int expfs_symlink(struct inode * dir, struct dentry *dentry,
+	  const char * symname)
+{
+    int ret = expfs_do_create(dir, dentry, S_ISREG);
+}
 
 
 const struct inode_operations expfs_iops = {
@@ -423,6 +429,7 @@ const struct inode_operations expfs_iops = {
     .lookup = expfs_lookup,
     .unlink = expfs_unlink,
     .rename = expfs_rename,
+    
 };
 
 
