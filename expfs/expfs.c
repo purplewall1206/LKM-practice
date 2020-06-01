@@ -420,11 +420,15 @@ int expfs_symlink(struct inode * dir, struct dentry *dentry,
 {
     // int ret = expfs_do_create(dir, dentry, S_ISREG);
     // 整体思路和do_create 差不太多，创建个新inode，新inode和之前的inode共享id，entry名叫symname，插入到dir里
+    // 想简单了，symbolic link是有相关参数的，还需要研究一下
     struct super_block *sb = dir->i_sb;
     struct inode  *curr;
     struct expfs_fileblock *pblk = dir->i_private;
     struct expfs_direntry *entry = (struct expfs_direntry*)pblk->buffer;
     // [ 2678.465789] expfs_symlink dir:3, name:a.sym/a.txt
+    // ls: cannot read symbolic link 'a.sym': Invalid argument
+    // a.sym  a.txt
+
     pr_info("%s dir:%ld, name:%s/%s\n", __func__, dir->i_ino, dentry->d_name.name, symname);
     int ret = expfs_do_create(dir, dentry, S_IFLNK);
     if (!ret) {
