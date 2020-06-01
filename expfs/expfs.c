@@ -422,8 +422,25 @@ int expfs_symlink(struct inode * dir, struct dentry *dentry,
     // 整体思路和do_create 差不太多，创建个新inode，新inode和之前的inode共享id，entry名叫symname，插入到dir里
     struct super_block *sb = dir->i_sb;
     struct inode  *curr;
-    pr_info("%s name:%s/%s\n", __func__, dentry->d_name.name, symname);
-    
+    struct expfs_fileblock *pblk = dir->i_private;
+    struct expfs_direntry *entry = (struct expfs_direntry*)pblk->buffer;
+    // [ 2678.465789] expfs_symlink dir:3, name:a.sym/a.txt
+    pr_info("%s dir:%d, name:%s/%s\n", __func__, dir->i_ino, dentry->d_name.name, symname);
+    int ret = expfs_do_create(dir, dentry, S_IFLNK);
+    for (int i = 0;i < pblk->dir_children;i++) {
+        if (! strcmp(entry[i].name, dentry->d_name.name)) {
+            curr = expfs_geti(sb, entry[i].index);
+            break;
+        }
+    }
+    if (!curr) {
+        pr_err("%s not get curr inode\n", __func__);
+        return - EFAULT;
+    } else {
+        struct expfs_fileblock *curr_blk = curr->i_private;
+        strcpy(curr_blk->buffer, symname);
+        pr_info("%s linked\n", __func__);
+    }
     return 0;
 }
 
@@ -435,7 +452,7 @@ const struct inode_operations expfs_iops = {
     .lookup = expfs_lookup,
     .unlink = expfs_unlink,
     .rename = expfs_rename,
-    
+    .symlink = expfs_symlink,
 };
 
 
