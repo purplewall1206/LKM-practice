@@ -232,7 +232,7 @@ static int expfs_do_create(struct inode *dir, struct dentry *dentry, umode_t mod
 
     if (usedBlks >= MAX_FILE) 
         return -EINVAL;
-    if (!S_ISDIR(mode) && !S_ISREG(mode))
+    if (!S_ISDIR(mode) && !S_ISREG(mode) && !S_ISLNK(mode))
         return -EINVAL;
 
     inode = new_inode(sb);
@@ -425,8 +425,12 @@ int expfs_symlink(struct inode * dir, struct dentry *dentry,
     struct expfs_fileblock *pblk = dir->i_private;
     struct expfs_direntry *entry = (struct expfs_direntry*)pblk->buffer;
     // [ 2678.465789] expfs_symlink dir:3, name:a.sym/a.txt
-    pr_info("%s dir:%d, name:%s/%s\n", __func__, dir->i_ino, dentry->d_name.name, symname);
+    pr_info("%s dir:%ld, name:%s/%s\n", __func__, dir->i_ino, dentry->d_name.name, symname);
     int ret = expfs_do_create(dir, dentry, S_IFLNK);
+    if (!ret) {
+        pr_err("%s error at %d\n", __func__, ret);
+        return ret;
+    }
     for (int i = 0;i < pblk->dir_children;i++) {
         if (! strcmp(entry[i].name, dentry->d_name.name)) {
             curr = expfs_geti(sb, entry[i].index);
