@@ -1,0 +1,236 @@
+[ 3021.738674] expfs_iterate : Iterate on inode [1]
+[ 3021.738676] expfs_iterate mode:1,  dir_children:0
+[ 3021.738959] expfs_iterate : Iterate on inode [1]
+[ 3021.738960] expfs_iterate mode:1,  dir_children:0
+[ 3021.739236] expfs_iterate : Iterate on inode [1]
+[ 3021.739237] expfs_iterate mode:1,  dir_children:0
+[ 3023.527890] expfs_iterate : Iterate on inode [1]
+[ 3023.527893] expfs_iterate mode:1,  dir_children:0
+[ 3023.528562] expfs_iterate : Iterate on inode [1]
+[ 3023.528565] expfs_iterate mode:1,  dir_children:0
+[ 3023.529093] expfs_iterate : Iterate on inode [1]
+[ 3023.529095] expfs_iterate mode:1,  dir_children:0
+[ 3027.895097] expfs_iterate : Iterate on inode [1]
+[ 3027.895100] expfs_iterate mode:1,  dir_children:0
+[ 3027.895716] expfs_iterate : Iterate on inode [1]
+[ 3027.895717] expfs_iterate mode:1,  dir_children:0
+[ 3027.896338] expfs_iterate : Iterate on inode [1]
+[ 3027.896340] expfs_iterate mode:1,  dir_children:0
+[ 3027.897471] expfs_iterate : Iterate on inode [1]
+[ 3027.897473] expfs_iterate mode:1,  dir_children:0
+[ 3029.007842] expfs_iterate : Iterate on inode [1]
+[ 3029.007844] expfs_iterate mode:1,  dir_children:0
+[ 3029.587976] expfs_iterate : Iterate on inode [1]
+[ 3029.587979] expfs_iterate mode:1,  dir_children:0
+[ 3030.128189] expfs_iterate : Iterate on inode [1]
+[ 3030.128192] expfs_iterate mode:1,  dir_children:0
+[ 3031.976710] expfs_iterate : Iterate on inode [1]
+[ 3031.976714] expfs_iterate mode:1,  dir_children:0
+[ 3031.980753] expfs_iterate : Iterate on inode [1]
+[ 3031.980756] expfs_iterate mode:1,  dir_children:0
+[ 3032.372670] expfs_iterate : Iterate on inode [1]
+[ 3032.372674] expfs_iterate mode:1,  dir_children:0
+[ 3032.912286] expfs_iterate : Iterate on inode [1]
+[ 3032.912288] expfs_iterate mode:1,  dir_children:0
+[ 3036.977161] expfs_iterate : Iterate on inode [1]
+[ 3036.977166] expfs_iterate mode:1,  dir_children:0
+[ 3038.713587] expfs_iterate : Iterate on inode [1]
+[ 3038.713589] expfs_iterate mode:1,  dir_children:0
+[ 3038.928940] expfs_iterate : Iterate on inode [1]
+[ 3038.928944] expfs_iterate mode:1,  dir_children:0
+[ 3041.060558] expfs_iterate : Iterate on inode [1]
+[ 3041.060562] expfs_iterate mode:1,  dir_children:0
+[ 3041.349615] expfs_mkdir
+[ 3041.349619] getblock: 2 used 0
+[ 3041.349620] expfs_do_create get block index 2, used blocks 2
+[ 3041.349620] expfs_do_create pblk : 1
+[ 3041.381158] expfs_iterate : Iterate on inode [1]
+[ 3041.381162] expfs_iterate mode:1,  dir_children:1
+[ 3041.381164] expfs expfs_iterate iterate  2  : d
+[ 3041.620883] expfs_iterate : Iterate on inode [1]
+[ 3041.620886] expfs_iterate mode:1,  dir_children:1
+[ 3041.620913] expfs expfs_iterate iterate  2  : d
+[ 3041.621232] expfs_iterate : Iterate on inode [1]
+[ 3041.621235] expfs_iterate mode:1,  dir_children:1
+[ 3041.621236] expfs expfs_iterate iterate  2  : d
+[ 3042.492538] expfs_iterate : Iterate on inode [1]
+[ 3042.492540] expfs_iterate mode:1,  dir_children:1
+[ 3042.492541] expfs expfs_iterate iterate  2  : d
+[ 3042.944050] expfs_iterate : Iterate on inode [1]
+[ 3042.944054] expfs_iterate mode:1,  dir_children:1
+[ 3042.944057] expfs expfs_iterate iterate  2  : d
+[ 3043.250597] expfs_iterate : Iterate on inode [1]
+[ 3043.250600] expfs_iterate mode:1,  dir_children:1
+[ 3043.250603] expfs expfs_iterate iterate  2  : d
+[ 3043.487401] expfs_iterate : Iterate on inode [1]
+[ 3043.487404] expfs_iterate mode:1,  dir_children:1
+[ 3043.487407] expfs expfs_iterate iterate  2  : d
+[ 3043.898776] expfs_iterate : Iterate on inode [1]
+[ 3043.898780] expfs_iterate mode:1,  dir_children:1
+[ 3043.898782] expfs expfs_iterate iterate  2  : d
+[ 3044.216345] expfs_iterate : Iterate on inode [1]
+[ 3044.216348] expfs_iterate mode:1,  dir_children:1
+[ 3044.216349] expfs expfs_iterate iterate  2  : d
+[ 3044.576473] expfs_iterate : Iterate on inode [1]
+[ 3044.576475] expfs_iterate mode:1,  dir_children:1
+[ 3044.576476] expfs expfs_iterate iterate  2  : d
+[ 3044.974209] expfs_iterate : Iterate on inode [1]
+[ 3044.974212] expfs_iterate mode:1,  dir_children:1
+[ 3044.974213] expfs expfs_iterate iterate  2  : d
+[ 3045.199742] expfs_iterate : Iterate on inode [1]
+[ 3045.199745] expfs_iterate mode:1,  dir_children:1
+[ 3045.199747] expfs expfs_iterate iterate  2  : d
+[ 3045.200100] expfs_iterate : Iterate on inode [1]
+[ 3045.200103] expfs_iterate mode:1,  dir_children:1
+[ 3045.200105] expfs expfs_iterate iterate  2  : d
+[ 3045.200315] expfs_iterate : Iterate on inode [1]
+[ 3045.200317] expfs_iterate mode:1,  dir_children:1
+[ 3045.200318] expfs expfs_iterate iterate  2  : d
+[ 3046.743881] expfs_iterate : Iterate on inode [1]
+[ 3046.743884] expfs_iterate mode:1,  dir_children:1
+[ 3046.743887] expfs expfs_iterate iterate  2  : d
+[ 3046.967137] expfs_iterate : Iterate on inode [1]
+[ 3046.967142] expfs_iterate mode:1,  dir_children:1
+[ 3046.967145] expfs expfs_iterate iterate  2  : d
+[ 3047.462096] expfs_iterate : Iterate on inode [1]
+[ 3047.462100] expfs_iterate mode:1,  dir_children:1
+[ 3047.462103] expfs expfs_iterate iterate  2  : d
+[ 3048.010958] expfs_iterate : Iterate on inode [1]
+[ 3048.010962] expfs_iterate mode:1,  dir_children:1
+[ 3048.010964] expfs expfs_iterate iterate  2  : d
+[ 3048.623434] expfs_iterate : Iterate on inode [1]
+[ 3048.623437] expfs_iterate mode:1,  dir_children:1
+[ 3048.623440] expfs expfs_iterate iterate  2  : d
+[ 3048.860208] expfs_iterate : Iterate on inode [1]
+[ 3048.860212] expfs_iterate mode:1,  dir_children:1
+[ 3048.860214] expfs expfs_iterate iterate  2  : d
+[ 3048.941172] expfs_rmdir
+[ 3048.941175] expfs_rmdir blk -> index:2, mode:1, children:0
+[ 3049.192454] expfs_iterate : Iterate on inode [1]
+[ 3049.192458] expfs_iterate mode:1,  dir_children:1
+[ 3049.192460] expfs expfs_iterate iterate  2  : d
+[ 3049.193479] expfs_iterate : Iterate on inode [1]
+[ 3049.193482] expfs_iterate mode:1,  dir_children:1
+[ 3049.193483] expfs expfs_iterate iterate  2  : d
+[ 3049.193745] expfs_iterate : Iterate on inode [1]
+[ 3049.193747] expfs_iterate mode:1,  dir_children:1
+[ 3049.193748] expfs expfs_iterate iterate  2  : d
+[ 3049.193976] expfs_iterate : Iterate on inode [1]
+[ 3049.193978] expfs_iterate mode:1,  dir_children:1
+[ 3049.193980] expfs expfs_iterate iterate  2  : d
+[ 3050.469916] expfs_iterate : Iterate on inode [1]
+[ 3050.469920] expfs_iterate mode:1,  dir_children:1
+[ 3050.469922] expfs expfs_iterate iterate  2  : d
+[ 3050.535843] expfs_iterate : Iterate on inode [1]
+[ 3050.535846] expfs_iterate mode:1,  dir_children:1
+[ 3050.535847] expfs expfs_iterate iterate  2  : d
+[ 3050.769277] expfs_iterate : Iterate on inode [1]
+[ 3050.769281] expfs_iterate mode:1,  dir_children:1
+[ 3050.769283] expfs expfs_iterate iterate  2  : d
+[ 3050.769321] expfs_iterate : Iterate on inode [1]
+[ 3050.769324] expfs_iterate mode:1,  dir_children:1
+[ 3050.769326] expfs expfs_iterate iterate  2  : d
+[ 3050.769696] expfs_iterate : Iterate on inode [1]
+[ 3050.769698] expfs_iterate mode:1,  dir_children:1
+[ 3050.769700] expfs expfs_iterate iterate  2  : d
+[ 3050.769986] expfs_iterate : Iterate on inode [1]
+[ 3050.769987] expfs_iterate mode:1,  dir_children:1
+[ 3050.769989] expfs expfs_iterate iterate  2  : d
+[ 3050.770400] expfs_iterate : Iterate on inode [1]
+[ 3050.770401] expfs_iterate mode:1,  dir_children:1
+[ 3050.770402] expfs expfs_iterate iterate  2  : d
+[ 3058.971215] expfs_iterate : Iterate on inode [1]
+[ 3058.971219] expfs_iterate mode:1,  dir_children:1
+[ 3058.971222] expfs expfs_iterate iterate  2  : d
+[ 3059.197267] expfs_iterate : Iterate on inode [1]
+[ 3059.197269] expfs_iterate mode:1,  dir_children:1
+[ 3059.197271] expfs expfs_iterate iterate  2  : d
+[ 3059.604134] expfs_iterate : Iterate on inode [1]
+[ 3059.604137] expfs_iterate mode:1,  dir_children:1
+[ 3059.604138] expfs expfs_iterate iterate  2  : d
+[ 3059.966360] expfs_iterate : Iterate on inode [1]
+[ 3059.966363] expfs_iterate mode:1,  dir_children:1
+[ 3059.966364] expfs expfs_iterate iterate  2  : d
+[ 3060.497091] expfs_iterate : Iterate on inode [1]
+[ 3060.497094] expfs_iterate mode:1,  dir_children:1
+[ 3060.497095] expfs expfs_iterate iterate  2  : d
+[ 3061.130068] expfs_iterate : Iterate on inode [1]
+[ 3061.130072] expfs_iterate mode:1,  dir_children:1
+[ 3061.130074] expfs expfs_iterate iterate  2  : d
+[ 3088.911472] expfs_iterate : Iterate on inode [1]
+[ 3088.911476] expfs_iterate mode:1,  dir_children:1
+[ 3088.911479] expfs expfs_iterate iterate  2  : d
+[ 3091.698439] expfs_iterate : Iterate on inode [1]
+[ 3091.698442] expfs_iterate mode:1,  dir_children:1
+[ 3091.698443] expfs expfs_iterate iterate  2  : d
+[ 3091.928009] expfs_iterate : Iterate on inode [1]
+[ 3091.928013] expfs_iterate mode:1,  dir_children:1
+[ 3091.928015] expfs expfs_iterate iterate  2  : d
+[ 3091.928301] expfs_iterate : Iterate on inode [1]
+[ 3091.928303] expfs_iterate mode:1,  dir_children:1
+[ 3091.928305] expfs expfs_iterate iterate  2  : d
+[ 3113.154033] expfs_iterate : Iterate on inode [1]
+[ 3113.154036] expfs_iterate mode:1,  dir_children:1
+[ 3113.154038] expfs expfs_iterate iterate  2  : d
+[ 4566.334982] expfs_iterate : Iterate on inode [1]
+[ 4566.334986] expfs_iterate mode:1,  dir_children:1
+[ 4566.334988] expfs expfs_iterate iterate  2  : d
+[ 4566.335062] expfs_iterate : Iterate on inode [1]
+[ 4566.335063] expfs_iterate mode:1,  dir_children:1
+[ 4566.335064] expfs expfs_iterate iterate  2  : d
+[ 4568.138924] expfs_iterate : Iterate on inode [1]
+[ 4568.138928] expfs_iterate mode:1,  dir_children:1
+[ 4568.138930] expfs expfs_iterate iterate  2  : d
+[ 4568.396110] expfs_iterate : Iterate on inode [1]
+[ 4568.396113] expfs_iterate mode:1,  dir_children:1
+[ 4568.396114] expfs expfs_iterate iterate  2  : d
+[ 4570.820315] expfs_iterate : Iterate on inode [1]
+[ 4570.820317] expfs_iterate mode:1,  dir_children:1
+[ 4570.820319] expfs expfs_iterate iterate  2  : d
+[ 4571.286400] expfs_iterate : Iterate on inode [1]
+[ 4571.286403] expfs_iterate mode:1,  dir_children:1
+[ 4571.286405] expfs expfs_iterate iterate  2  : d
+[ 4571.537506] expfs_iterate : Iterate on inode [1]
+[ 4571.537509] expfs_iterate mode:1,  dir_children:1
+[ 4571.537511] expfs expfs_iterate iterate  2  : d
+[ 4573.140905] expfs_iterate : Iterate on inode [1]
+[ 4573.140908] expfs_iterate mode:1,  dir_children:1
+[ 4573.140911] expfs expfs_iterate iterate  2  : d
+[ 4573.509215] expfs_iterate : Iterate on inode [1]
+[ 4573.509217] expfs_iterate mode:1,  dir_children:1
+[ 4573.509219] expfs expfs_iterate iterate  2  : d
+[ 4573.788139] expfs_iterate : Iterate on inode [1]
+[ 4573.788143] expfs_iterate mode:1,  dir_children:1
+[ 4573.788145] expfs expfs_iterate iterate  2  : d
+[ 4574.301277] expfs_iterate : Iterate on inode [1]
+[ 4574.301280] expfs_iterate mode:1,  dir_children:1
+[ 4574.301281] expfs expfs_iterate iterate  2  : d
+[ 4574.730115] expfs_iterate : Iterate on inode [1]
+[ 4574.730117] expfs_iterate mode:1,  dir_children:1
+[ 4574.730119] expfs expfs_iterate iterate  2  : d
+[ 4575.496100] expfs_iterate : Iterate on inode [1]
+[ 4575.496102] expfs_iterate mode:1,  dir_children:1
+[ 4575.496103] expfs expfs_iterate iterate  2  : d
+[ 4576.729782] expfs_iterate : Iterate on inode [1]
+[ 4576.729786] expfs_iterate mode:1,  dir_children:1
+[ 4576.729788] expfs expfs_iterate iterate  2  : d
+[ 4577.334789] expfs_iterate : Iterate on inode [1]
+[ 4577.334791] expfs_iterate mode:1,  dir_children:1
+[ 4577.334792] expfs expfs_iterate iterate  2  : d
+[ 4577.650528] expfs_iterate : Iterate on inode [1]
+[ 4577.650530] expfs_iterate mode:1,  dir_children:1
+[ 4577.650532] expfs expfs_iterate iterate  2  : d
+[ 4577.650713] expfs_iterate : Iterate on inode [1]
+[ 4577.650714] expfs_iterate mode:1,  dir_children:1
+[ 4577.650715] expfs expfs_iterate iterate  2  : d
+[ 4582.892816] expfs_iterate : Iterate on inode [1]
+[ 4582.892819] expfs_iterate mode:1,  dir_children:1
+[ 4582.892821] expfs expfs_iterate iterate  2  : d
+[ 4582.893111] expfs_iterate : Iterate on inode [1]
+[ 4582.893113] expfs_iterate mode:1,  dir_children:1
+[ 4582.893114] expfs expfs_iterate iterate  2  : d
+[ 4582.893758] expfs_iterate : Iterate on inode [1]
+[ 4582.893760] expfs_iterate mode:1,  dir_children:1
+[ 4582.893762] expfs expfs_iterate iterate  2  : d
+[ 4583.963305] expfs_kill_sb : kill_superblock
+[ 4584.051093] expfs_exit : unload expfs at 000000007d598159

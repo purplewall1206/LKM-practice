@@ -20,6 +20,7 @@ MODULE_LICENSE("GPL");
 #define MAX_BUF 256
 #define MAX_FILE 50
 #define MAX_NAME 50
+#define BUFFER_SIZE 256
 
 struct expfs_direntry
 {
@@ -36,12 +37,12 @@ struct expfs_fileblock
         int filesize;
         int dir_children;
     };
-    char buffer[0];
+    char buffer[BUFFER_SIZE];
 };
 
 int usedBlks = 0; // 统计已经使用的文件块数量
 
-struct expfs_fileblock blks[MAX_FILE];  // 存储文件块 [0]->superblock  [1]->welcomefile
+struct expfs_fileblock * blks;  // 存储文件块 [0]->superblock  [1]->welcomefile
 
 const struct inode_operations expfs_iops;
 
@@ -53,7 +54,8 @@ const struct file_operations expfs_dir_fops;
 static int getblock (void)
 {
     for (int i = 2;i < MAX_FILE;i++) {
-        if (blks[i].used != 1) {
+        // pr_info("%s: %d used %d\n", __func__, i, blks[i].used);
+        if (blks[i].used == 0) {
             blks[i].used = 1;
             return i;
         }
@@ -79,20 +81,20 @@ static struct inode * expfs_geti(struct super_block *sb, int index)
         inode->i_fop = &expfs_fops;
     }
 
-    struct timespec64 current_time;
-    ktime_get_ts64(&current_time);
-    inode->i_atime = inode->i_ctime = inode->i_mtime = current_time;
+    // struct timespec64 current_time;
+    // ktime_get_ts64(&current_time);
+    inode->i_atime = inode->i_ctime = inode->i_mtime = current_time(inode);
     inode->i_private = blk;
 
     return inode;
 }
 
 /*=============== dir file operations =========================*/
-int count_iter = 0;
+// int count_iter = 0;
 static int expfs_iterate(struct file *filp, struct dir_context *ctx)
 {
     // mdelay(2000);
-    pr_info("%s  repeat %d\n", __func__, count_iter++);
+    // pr_info("%s  repeat %d\n", __func__, count_iter++);
     struct expfs_fileblock *blk;
     struct expfs_direntry *entry;
     // int i;
@@ -100,8 +102,8 @@ static int expfs_iterate(struct file *filp, struct dir_context *ctx)
     loff_t pos = filp->f_pos;
     if (pos) return 0;
 
-	printk(KERN_INFO "%s : Iterate on inode [%lu]\n",
-	       __func__, filp->f_inode->i_ino);
+	// printk(KERN_INFO "%s : Iterate on inode [%lu]\n",
+	//        __func__, filp->f_inode->i_ino);
 
     // blk = (struct expfs_fileblock *) filp->f_path.dentry->d_inode->i_private;
     blk = (struct expfs_fileblock *) filp->f_path.dentry->d_inode->i_private;
@@ -110,9 +112,12 @@ static int expfs_iterate(struct file *filp, struct dir_context *ctx)
         return -ENOTDIR;
 
     entry = (struct expfs_direntry *) &blk->buffer[0];
-    pr_info("%s mode:%d,  dir_children:%d\n", __func__, S_ISDIR(blk->mode), blk->dir_children);
+    // pr_info("%s mode:%d,  dir_children:%d\n", __func__, S_ISDIR(blk->mode), blk->dir_children);
+    if (!dir_emit_dots(filp, ctx)) {
+        pr_err("%s current or upper directory load failed\n", __func__);
+    } 
     for (int i = 0;i < blk->dir_children;i++) {
-        pr_info("expfs %s iterate  %d  : %s\n", __func__, entry[i].index, entry[i].name);
+        // pr_info("expfs %s iterate  %d  : %s\n", __func__, entry[i].index, entry[i].name);
         dir_emit(ctx, entry[i].name, sizeof(entry[i].name), entry[i].index, DT_UNKNOWN);
         ++ctx->pos;
         filp->f_pos += sizeof(struct expfs_direntry);
@@ -143,34 +148,76 @@ ssize_t expfs_read (struct file *filp, char __user * buf, size_t len, loff_t *pp
     if (copy_to_user(buf, buffer, len)) {
         return -EFAULT;
     }
+
     *ppos += len;
     return len;
 }
 
 ssize_t expfs_write (struct file * filp, const char __user * buf, size_t len, loff_t * ppos)
 {
-    pr_info("%s : filename %s, content:%s,len:%ld\n",__func__, filp->f_path.dentry->d_name.name, buf, len);
+    pr_info("%s : filename %s, content:%s,len:%ld,pos:%lld\n",__func__, filp->f_path.dentry->d_name.name, buf, len, *ppos);
     struct expfs_fileblock *blk;
-    char *buffer;
+    // char *buffer;
+    int ret = 0;
+    unsigned long p = *ppos;
+    unsigned int count = len;
     blk = (struct expfs_fileblock *) filp->f_path.dentry->d_inode->i_private;
-    pr_info("%s : write file i_no %d  %ld\n", __func__, blk->index, filp->f_path.dentry->d_inode->i_ino);
-    buffer = (char *) &blk->buffer[0];
-    buffer += *ppos;
+    // pr_info("%s : write file i_no %d  %ld\n", __func__, blk->index, filp->f_path.dentry->d_inode->i_ino);
+    // buffer = (char *) &blk->buffer[0];
+    // pr_info("old postion : %p  : %s\n", buffer, buffer);
+    // buffer += *ppos;
+    // pr_info("new position : %p\n", buffer);
+    if (p >= BUFFER_SIZE)
+        return count ? -ENXIO : 0;
+    if (count > BUFFER_SIZE - p)
+        count = BUFFER_SIZE - p;
 
-    if (copy_from_user(buffer, buf, len)) {
-        return -EFAULT;
+    // if (copy_from_user(buffer, buf, len)) {
+    if (copy_from_user(blk->buffer + p, buf, count)) {
+        ret =  -EFAULT;
+    } else {
+        pr_info("%s buffer %p:%s\n", __func__,  blk->buffer, blk->buffer);
+        *ppos += count;
+        ret = count;
+        blk->filesize = *ppos;
     }
-    // strcpy(blk->buffer, buffer);
-    pr_info("%s buffer %s \n --%s\n", __func__, buffer, blk->buffer);
-    *ppos += len;
-    blk->filesize = *ppos;
 
-    return len;
+    return ret;
+}
+static loff_t expfs_llseek (struct file * filp, loff_t offset, int orig)
+{
+    loff_t ret = 0;
+    pr_info("%s offset:%lld, orig:%d\n", __func__, offset, orig);
+    switch(orig)
+    {
+        case 0:
+            if(offset < 0 || offset > BUFFER_SIZE) {
+                ret = - EINVAL;
+                break;
+            }
+            filp->f_pos = offset;
+            ret = filp->f_pos;
+            break;
+        case 1:
+            if ( ((filp->f_pos + offset) > BUFFER_SIZE) ||
+                 ((filp->f_pos + offset) < 0)  ) {
+                     ret = -EINVAL;
+                     break;
+            }
+            filp->f_pos += offset;
+            ret = (loff_t) filp->f_pos;
+            break;
+        default:
+            ret = - EINVAL;
+            break;
+    }
+    return ret;
 }
 
 const struct file_operations expfs_fops = {
     .read = expfs_read,
     .write = expfs_write,
+    .llseek = expfs_llseek,
 };
 
 /*================= inode operations ====================*/
@@ -185,7 +232,7 @@ static int expfs_do_create(struct inode *dir, struct dentry *dentry, umode_t mod
 
     if (usedBlks >= MAX_FILE) 
         return -EINVAL;
-    if (!S_ISDIR(mode) && !S_ISREG(mode))
+    if (!S_ISDIR(mode) && !S_ISREG(mode) && !S_ISLNK(mode))
         return -EINVAL;
 
     inode = new_inode(sb);
@@ -194,15 +241,16 @@ static int expfs_do_create(struct inode *dir, struct dentry *dentry, umode_t mod
 
     inode->i_sb = sb;
     inode->i_op = &expfs_iops;
-    struct timespec64 current_time;
-    ktime_get_ts64(&current_time);
-    inode->i_atime = inode->i_ctime = inode->i_mtime = current_time;
+    // struct timespec64 current_time;
+    // ktime_get_ts64(&current_time);
+    inode->i_atime = inode->i_ctime = inode->i_mtime = current_time(inode);
 
     idx = getblock();
     blk = &blks[idx];
     inode->i_ino = idx;
     blk->index = idx;
     blk->mode = mode;
+    blk->used = 1;
     usedBlks++;
     pr_info("%s get block index %d, used blocks %d\n", __func__, idx, usedBlks);
 
@@ -236,7 +284,7 @@ struct dentry * expfs_lookup (struct inode *parent_inode,struct dentry *child_de
     struct expfs_direntry *entry;
 
     blk = (struct expfs_fileblock *) parent_inode->i_private;
-    pr_info("%s expfs lookup index %d, childname: %s\n", __func__, blk->index, child_dentry->d_name.name);
+    pr_info("%s expfs lookup index %d, childnameaddr: %p\n", __func__, blk->index, child_dentry->d_name.name);
     entry = (struct expfs_direntry *) &blk->buffer[0];
     for (int i = 0;i < blk->dir_children;i++) {
         if (!strcmp(entry[i].name, child_dentry->d_name.name)) {
@@ -266,11 +314,43 @@ int expfs_mkdir (struct inode *dir ,struct dentry *dentry, umode_t mode)
 
 int expfs_rmdir (struct inode *dir,struct dentry *dentry)
 {
-    pr_info("%s\n", __func__);
     struct inode *inode = dentry->d_inode;
+    pr_info("%s dir inode:%ld\n", __func__, inode->i_ino);
     struct expfs_fileblock *blk = (struct expfs_fileblock * ) inode->i_private;
-    blk->used = 0;
-    return simple_rmdir(dir, dentry);
+    struct expfs_fileblock *pblk = dir->i_private;
+    int ret = 0;
+    // blk->used = 0;
+
+    // TODO
+    // 1. check empty
+    pr_info("%s parent blk-> index:%d, mode:%d, children:%d\n", __func__, blk->index, S_ISDIR(blk->mode), blk->dir_children);
+    pr_info("%s blk -> index:%d, mode:%d, children:%d\n", __func__, blk->index, S_ISDIR(blk->mode), blk->dir_children);
+    struct expfs_direntry *entry = (struct expfs_direntry *) pblk->buffer;
+
+    // 2. is empty dir?
+    if (S_ISDIR(blk->mode) && blk->dir_children == 0) {
+        blk->used = 0;
+
+        // parent entry erase
+        for (int i = 0;i < pblk->dir_children;i++) {
+            if (!strcmp(entry[i].name, dentry->d_name.name)) {
+                for (int j = i;j < pblk->dir_children-1; j++) {
+                    memcpy(&entry[j], &entry[j+1], sizeof(struct expfs_direntry));
+                }
+                pblk->dir_children--;
+                break;
+            }
+        }
+
+        ret = simple_rmdir(dir, dentry);
+        pr_info("%s simple_rmdir ret:%d\n", __func__, ret);
+
+    } else {
+        pr_info("%s dir not empty\n", __func__);
+        return -ENOTEMPTY;
+    }
+    // return simple_rmdir(dir, dentry);
+    return ret;
 }
 
 int expfs_unlink(struct inode *dir, struct dentry *dentry)
@@ -279,6 +359,7 @@ int expfs_unlink(struct inode *dir, struct dentry *dentry)
     struct expfs_fileblock *blk = inode->i_private;
     struct expfs_fileblock *pblk = dir->i_private;
     struct expfs_direntry *entry;
+    pr_info("%s unlink : %s\n", __func__, dentry->d_name.name);
 
     entry = (struct expfs_direntry *)&pblk->buffer[0];
     for (int i = 0;i < pblk->dir_children;i++) {
@@ -294,12 +375,92 @@ int expfs_unlink(struct inode *dir, struct dentry *dentry)
     return simple_unlink(dir, dentry);
 }
 
+int expfs_rename(struct inode *old_dir, struct dentry *old_dentry,
+		  struct inode *new_dir, struct dentry *new_dentry,
+		  unsigned int flags) 
+{
+    struct expfs_fileblock *old_blk = old_dir->i_private;
+    struct expfs_fileblock *new_blk = new_dir->i_private;
+    struct expfs_direntry *old_entry = (struct expfs_direntry *)old_blk->buffer;
+    struct expfs_direntry *new_entry = (struct expfs_direntry *)new_blk->buffer;
+    struct inode *curr;
+    pr_info("%s flags:%d old_dir:%ld/%d, old_dentry:%s\nnew_dir:%ld/%d, new_dentry:%s\n",
+            __func__, flags, old_dir->i_ino, old_blk->index, old_dentry->d_name.name,
+            new_dir->i_ino, new_blk->index, new_dentry->d_name.name);
+    
+    // delete old, add new
+    for (int i = 0;i < old_blk->dir_children;i++) {
+        if (!strcmp(old_entry[i].name, old_dentry->d_name.name)) {
+            curr = expfs_geti(old_dir->i_sb, old_entry[i].index);
+            for (int j = i;j < old_blk->dir_children-1;j++) {
+                memcpy(&old_entry[j], &old_entry[j+1], sizeof(struct expfs_direntry));
+            }
+            old_blk->dir_children--;
+            break;
+        }
+    }
+    // pr_info("%s delete old entry -> index:%ld\ndir_children len:%d/%d\n",
+    //          __func__, curr->i_ino, old_blk->dir_children,new_blk->dir_children);
+    new_entry += new_blk->dir_children;
+    new_blk->dir_children++;
+    new_entry->index = curr->i_ino;
+    strcpy(new_entry->name, new_dentry->d_name.name);
+    // pr_info("%s new index:%d, name:%s\n", __func__, new_entry->index, new_entry->name);
+
+
+    int ret = simple_rename(old_dir, old_dentry, new_dir, new_dentry, flags);
+    WARN_ON(ret == -EINVAL);
+    WARN_ON(ret == -ENOTEMPTY);
+    return ret;
+}
+
+// TODO
+int expfs_symlink(struct inode * dir, struct dentry *dentry,
+	  const char * symname)
+{
+    // int ret = expfs_do_create(dir, dentry, S_ISREG);
+    // 整体思路和do_create 差不太多，创建个新inode，新inode和之前的inode共享id，entry名叫symname，插入到dir里
+    // 想简单了，symbolic link是有相关参数的，还需要研究一下
+    struct super_block *sb = dir->i_sb;
+    struct inode  *curr;
+    struct expfs_fileblock *pblk = dir->i_private;
+    struct expfs_direntry *entry = (struct expfs_direntry*)pblk->buffer;
+    // [ 2678.465789] expfs_symlink dir:3, name:a.sym/a.txt
+    // ls: cannot read symbolic link 'a.sym': Invalid argument
+    // a.sym  a.txt
+
+    pr_info("%s dir:%ld, name:%s/%s\n", __func__, dir->i_ino, dentry->d_name.name, symname);
+    int ret = expfs_do_create(dir, dentry, S_IFLNK);
+    if (!ret) {
+        pr_err("%s error at %d\n", __func__, ret);
+        return ret;
+    }
+    for (int i = 0;i < pblk->dir_children;i++) {
+        if (! strcmp(entry[i].name, dentry->d_name.name)) {
+            curr = expfs_geti(sb, entry[i].index);
+            break;
+        }
+    }
+    if (!curr) {
+        pr_err("%s not get curr inode\n", __func__);
+        return - EFAULT;
+    } else {
+        struct expfs_fileblock *curr_blk = curr->i_private;
+        strcpy(curr_blk->buffer, symname);
+        pr_info("%s linked\n", __func__);
+    }
+    return 0;
+}
+
+
 const struct inode_operations expfs_iops = {
     .create = expfs_create,
     .mkdir = expfs_mkdir,
     .rmdir = expfs_rmdir,
     .lookup = expfs_lookup,
     .unlink = expfs_unlink,
+    .rename = expfs_rename,
+    .symlink = expfs_symlink,
 };
 
 
@@ -312,7 +473,7 @@ int expfs_fill_super(struct super_block *sb, void *data, int silent)
     int ret = 0;
     struct inode *root_inode;
     mode_t mode = S_IFDIR;
-    struct timespec64 curr;
+    // struct timespec64 curr;
 
     root_inode = new_inode(sb);
     root_inode->i_ino = 1;
@@ -320,8 +481,8 @@ int expfs_fill_super(struct super_block *sb, void *data, int silent)
     root_inode->i_sb = sb;
     root_inode->i_op = &expfs_iops;
     root_inode->i_fop = &expfs_dir_fops;
-    ktime_get_ts64(&curr);
-    root_inode->i_atime = root_inode->i_mtime = root_inode->i_ctime = curr;
+    // ktime_get_ts64(&curr);
+    root_inode->i_atime = root_inode->i_mtime = root_inode->i_ctime = current_time(root_inode);
     
     // iterate 函数显示 file指针里面的inode->i_ino 为1 ，所以这里必须定义为1
     blks[1].mode = mode;
@@ -365,8 +526,8 @@ static int __init expfs_init(void)
     // unsigned int blksize = sizeof(struct expfs_fileblock) * MAX_FILE;
     // usedBlks = 0;
 
-    // blks = vmalloc(blksize);
-    memset(blks, 0, sizeof(blks));
+    blks = vmalloc((sizeof(struct expfs_fileblock)) * MAX_FILE);
+    memset(blks, 0, (sizeof(struct expfs_fileblock)) * MAX_FILE);
     ret = register_filesystem(&expfs_type);
     if (ret) {
         pr_err("register filesystem failed\n");

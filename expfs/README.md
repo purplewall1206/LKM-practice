@@ -1,7 +1,59 @@
 # simplefs 简单文件系统
 
+
+## 第二阶段 借鉴minixfs功能增强阶段
+
+之前思路有点想偏了，为啥要借鉴github上面的不成熟fs，直接借鉴Minixfs不香吗？
+
+github上面的repo存在的问题: 
+* [jserv/simplefs](https://github.com/jserv/simplefs)  
+* [rgouicem/ouichefs](https://github.com/rgouicem/ouichefs)   
+    测试过程中遇到：删除文件夹后重新创建，无法在文件夹内部创建文件。
+    ```
+    mkdir dir
+    echo "test" > dir/a.txt
+    cat dir/a.txt
+    // delete dir
+    rm -rf dir
+    
+    mkdir dir
+    echo "test" > dir/b.txt
+    // 文件打开失败，找不到文件
+    ```
+    
+* [krinkinmu/aufs](https://github.com/krinkinmu/aufs)   
+* [psankar/simplefs](https://github.com/psankar/simplefs)   
+    函数有问题，根本无法编译
+
+### 挂载文件系统脚本
+
+```
+mkdir ./mnt
+dd if=/dev/zero  of=test.img  bs=10M count=50
+mkfs.minix  test.img
+sudo mount -o loop -t minix test.img ./mnt
+sudo chmod -R 777 ./mnt
+cd mnt
+```
+### minixfs 编译
+内核默认不编译minixfs，因此需要在menuconfig -> filesystem -> miscellaneous -> minix  
+在偏下的位置，需要仔细找一下。
+
+
+### 2.1 简化minixfs代码
+* minix分成v1 v2 v3 三个版本，我们要做的第一步就是删除掉额外的版本，只保留v3，减少代码量，熟悉文件系统架构
+
+* 动手完成mkfs.minix，先读出来，后重新写入
+
+### 2.2 模仿minixfs写exp1fs
+
+包括pagecache，dcache等特性
+
+
+
 ## 第一阶段 内存文件系统阶段
 
+<<<<<<< HEAD
 ### Attension 借鉴minixfs
 
 之前思路有点想偏了，为啥要借鉴github上面的不成熟fs，直接借鉴Minixfs不香吗？
@@ -40,6 +92,8 @@ cd mnt
 内核默认不编译minixfs，因此需要在menuconfig -> filesystem -> miscellaneous -> minix  
 在偏下的位置，需要仔细找一下。
 
+=======
+>>>>>>> dev
 
 
 ### 1. 设计思路
@@ -99,6 +153,53 @@ struct file_block {
 
 此处的问题是ls过程中没有调整 file->f_pos 和 pos的位置。
 
+read 无限循环的问题主要也是原版代码blk数据结构存在问题
+
+```
+struct xxx {
+    ...;
+    char data[0]
+};
+
+struct xxx *x = kmalloc ((sizeof(struct xxx) + length) * SIZE);
+```
+这里这么实现是为了动态申请内存的时候能够在尾巴上加上任意长度内存，使得struct为动态长度，但是问题是申请内存的时候直接使用数组申请，所以导致获得内存块的位置经常出现问题
+
+### 4. 可以进一步实现的目标
+
+* 代码优化，拆分到多个文件里面
+* 遍历时添加当前目录和上级目录，注意i_ino为1的时候没有上级目录
+* 增加动态申请文件数
+* 给fileblock的操作加锁
+* 删除文件夹
+* 创建时间正确
+* 修改时间正确
+* 修改读写便宜（read write llseek）
+* 重命名
+* iterate 循环经常崩溃的地方试着加入异常抛出（新版代码可能没有）
+
+```
+[ 1248.657816] expfs_iterate : Iterate on inode [1]
+[ 1248.657817] expfs_iterate mode:1,  dir_children:2
+[ 1248.657818] expfs expfs_iterate iterate  2  : d
+[ 1248.657819] expfs expfs_iterate iterate  3  : e
+[ 1248.657833] BUG: kernel NULL pointer dereference, address: 0000000000000030
+[ 1248.657836] #PF: supervisor read access in kernel mode
+[ 1248.657837] #PF: error_code(0x0000) - not-present page
+
+
+[11877.310151] Call Trace:
+[11877.310210]  simple_unlink+0x46/0x60
+[11877.310212]  simple_rmdir+0x34/0x50
+[11877.310234]  expfs_rmdir+0x43/0x49 [expfs]
+[11877.310237]  vfs_rmdir+0x86/0x1a0
+[11877.310238]  do_rmdir+0x18c/0x1c0
+[11877.310240]  __x64_sys_unlinkat+0x45/0x60
+[11877.315722]  do_syscall_64+0x57/0x190
+[11877.315789]  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+[11877.315806] RIP: 0033:0x7fa1cc287f9b
+
+```
 
 
 
