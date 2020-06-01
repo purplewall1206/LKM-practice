@@ -418,7 +418,13 @@ int expfs_rename(struct inode *old_dir, struct dentry *old_dentry,
 int expfs_symlink(struct inode * dir, struct dentry *dentry,
 	  const char * symname)
 {
-    int ret = expfs_do_create(dir, dentry, S_ISREG);
+    // int ret = expfs_do_create(dir, dentry, S_ISREG);
+    // 整体思路和do_create 差不太多，创建个新inode，新inode和之前的inode共享id，entry名叫symname，插入到dir里
+    struct super_block *sb = dir->i_sb;
+    struct inode  *curr;
+    pr_info("%s name:%s/%s\n", __func__, dentry->d_name.name, symname);
+    
+    return 0;
 }
 
 
