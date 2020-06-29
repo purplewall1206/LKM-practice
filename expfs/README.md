@@ -58,6 +58,47 @@ cd mnt
 
 ## 第一阶段 内存文件系统阶段
 
+<<<<<<< HEAD
+### Attension 借鉴minixfs
+
+之前思路有点想偏了，为啥要借鉴github上面的不成熟fs，直接借鉴Minixfs不香吗？
+
+github上面的repo存在的问题: 
+* [jserv/simplefs](https://github.com/jserv/simplefs)  
+* [rgouicem/ouichefs](https://github.com/rgouicem/ouichefs)   
+    测试过程中遇到：删除文件夹后重新创建，无法在文件夹内部创建文件。
+    ```
+    mkdir dir
+    echo "test" > dir/a.txt
+    cat dir/a.txt
+    // delete dir
+    rm -rf dir
+    
+    mkdir dir
+    echo "test" > dir/b.txt
+    // 文件打开失败，找不到文件
+    ```
+    
+* [krinkinmu/aufs](https://github.com/krinkinmu/aufs)   
+* [psankar/simplefs](https://github.com/psankar/simplefs)   
+    函数有问题，根本无法编译
+
+### 挂载文件系统脚本
+
+```
+mkdir ./mnt
+dd if=/dev/zero  of=test.img  bs=10M count=50
+mkfs.minix  test.img
+sudo mount -o loop -t minix test.img ./mnt
+sudo chmod -R 777 ./mnt
+cd mnt
+```
+### minixfs 编译
+内核默认不编译minixfs，因此需要在menuconfig -> filesystem -> miscellaneous -> minix  
+在偏下的位置，需要仔细找一下。
+
+=======
+>>>>>>> dev
 
 
 ### 1. 设计思路
