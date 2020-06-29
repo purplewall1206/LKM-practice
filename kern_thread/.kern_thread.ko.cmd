@@ -1,0 +1,1 @@
+cmd_/home/ppw/Documents/LKM-practice/kern_thread/kern_thread.ko := ld -r -m elf_x86_64  -z max-page-size=0x200000  --build-id  -T ./scripts/module-common.lds -o /home/ppw/Documents/LKM-practice/kern_thread/kern_thread.ko /home/ppw/Documents/LKM-practice/kern_thread/kern_thread.o /home/ppw/Documents/LKM-practice/kern_thread/kern_thread.mod.o;  true

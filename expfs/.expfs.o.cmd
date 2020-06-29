@@ -1,4 +1,4 @@
-cmd_/home/ppw/Documents/LKM-practice/expfs/expfs.o := gcc -Wp,-MD,/home/ppw/Documents/LKM-practice/expfs/.expfs.o.d  -nostdinc -isystem /usr/lib/gcc/x86_64-linux-gnu/9/include -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/kconfig.h -include ./include/linux/compiler_types.h -D__KERNEL__ -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE -Werror=implicit-function-declaration -Werror=implicit-int -Wno-format-security -std=gnu89 -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -m64 -falign-jumps=1 -falign-loops=1 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mskip-rax-setup -mtune=generic -mno-red-zone -mcmodel=kernel -DCONFIG_X86_X32_ABI -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -DCONFIG_AS_CFI_SECTIONS=1 -DCONFIG_AS_SSSE3=1 -DCONFIG_AS_AVX=1 -DCONFIG_AS_AVX2=1 -DCONFIG_AS_AVX512=1 -DCONFIG_AS_SHA1_NI=1 -DCONFIG_AS_SHA256_NI=1 -Wno-sign-compare -fno-asynchronous-unwind-tables -mindirect-branch=thunk-extern -mindirect-branch-register -fno-jump-tables -fno-delete-null-pointer-checks -Wno-frame-address -Wno-format-truncation -Wno-format-overflow -Wno-address-of-packed-member -O2 --param=allow-store-data-races=0 -Wframe-larger-than=1024 -fstack-protector-strong -Wno-unused-but-set-variable -Wimplicit-fallthrough -Wno-unused-const-variable -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-var-tracking-assignments -g -gdwarf-4 -pg -mrecord-mcount -mfentry -DCC_USING_FENTRY -flive-patching=inline-clone -Wdeclaration-after-statement -Wvla -Wno-pointer-sign -Wno-stringop-truncation -fno-strict-overflow -fno-merge-all-constants -fmerge-constants -fno-stack-check -fconserve-stack -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -fmacro-prefix-map=./= -fcf-protection=none -Wno-packed-not-aligned -std=gnu99 -Wno-declaration-after-statement  -DMODULE  -DKBUILD_BASENAME='"expfs"' -DKBUILD_MODNAME='"expfs"' -c -o /home/ppw/Documents/LKM-practice/expfs/expfs.o /home/ppw/Documents/LKM-practice/expfs/expfs.c
+cmd_/home/ppw/Documents/LKM-practice/expfs/expfs.o := gcc -Wp,-MD,/home/ppw/Documents/LKM-practice/expfs/.expfs.o.d  -nostdinc -isystem /usr/lib/gcc/x86_64-linux-gnu/9/include  -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/kconfig.h -Iubuntu/include  -include ./include/linux/compiler_types.h -D__KERNEL__ -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE -Werror=implicit-function-declaration -Werror=implicit-int -Wno-format-security -std=gnu89 -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -m64 -falign-jumps=1 -falign-loops=1 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mskip-rax-setup -mtune=generic -mno-red-zone -mcmodel=kernel -DCONFIG_X86_X32_ABI -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -DCONFIG_AS_CFI_SECTIONS=1 -DCONFIG_AS_SSSE3=1 -DCONFIG_AS_AVX=1 -DCONFIG_AS_AVX2=1 -DCONFIG_AS_AVX512=1 -DCONFIG_AS_SHA1_NI=1 -DCONFIG_AS_SHA256_NI=1 -Wno-sign-compare -fno-asynchronous-unwind-tables -mindirect-branch=thunk-extern -mindirect-branch-register -fno-jump-tables -fno-delete-null-pointer-checks -Wno-frame-address -Wno-format-truncation -Wno-format-overflow -Wno-address-of-packed-member -O2 --param=allow-store-data-races=0 -Wframe-larger-than=1024 -fstack-protector-strong -Wno-unused-but-set-variable -Wimplicit-fallthrough -Wno-unused-const-variable -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-var-tracking-assignments -pg -mrecord-mcount -mfentry -DCC_USING_FENTRY -flive-patching=inline-clone -Wdeclaration-after-statement -Wvla -Wno-pointer-sign -Wno-stringop-truncation -fno-strict-overflow -fno-merge-all-constants -fmerge-constants -fno-stack-check -fconserve-stack -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -fmacro-prefix-map=./= -fcf-protection=none -Wno-packed-not-aligned -std=gnu99 -Wno-declaration-after-statement  -DMODULE  -DKBUILD_BASENAME='"expfs"' -DKBUILD_MODNAME='"expfs"' -c -o /home/ppw/Documents/LKM-practice/expfs/expfs.o /home/ppw/Documents/LKM-practice/expfs/expfs.c
 
 source_/home/ppw/Documents/LKM-practice/expfs/expfs.o := /home/ppw/Documents/LKM-practice/expfs/expfs.c
 
@@ -11,7 +11,6 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
     $(wildcard include/config/have/arch/compiler/h.h) \
     $(wildcard include/config/enable/must/check.h) \
     $(wildcard include/config/optimize/inlining.h) \
-    $(wildcard include/config/cc/has/asm/inline.h) \
   include/linux/compiler_attributes.h \
   include/linux/compiler-gcc.h \
     $(wildcard include/config/retpoline.h) \
@@ -27,7 +26,7 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
     $(wildcard include/config/kasan.h) \
   include/linux/compiler_types.h \
   include/uapi/linux/types.h \
-  arch/x86/include/generated/uapi/asm/types.h \
+  arch/x86/include/uapi/asm/types.h \
   include/uapi/asm-generic/types.h \
   include/asm-generic/int-ll64.h \
   include/uapi/asm-generic/int-ll64.h \
@@ -90,6 +89,7 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
     $(wildcard include/config/mmu.h) \
     $(wildcard include/config/prove/locking.h) \
     $(wildcard include/config/arch/has/refcount.h) \
+    $(wildcard include/config/lock/down/kernel.h) \
     $(wildcard include/config/panic/timeout.h) \
   /usr/lib/gcc/x86_64-linux-gnu/9/include/stdarg.h \
   include/linux/limits.h \
@@ -149,6 +149,7 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
     $(wildcard include/config/early/printk.h) \
     $(wildcard include/config/printk/nmi.h) \
     $(wildcard include/config/printk.h) \
+    $(wildcard include/config/kmsg/ids.h) \
     $(wildcard include/config/dynamic/debug.h) \
   include/linux/kern_levels.h \
   include/linux/cache.h \
@@ -175,7 +176,7 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
     $(wildcard include/config/debug/lock/alloc.h) \
   include/linux/spinlock.h \
     $(wildcard include/config/debug/spinlock.h) \
-    $(wildcard include/config/preemption.h) \
+    $(wildcard include/config/preempt.h) \
   include/linux/preempt.h \
     $(wildcard include/config/preempt/count.h) \
     $(wildcard include/config/debug/preempt.h) \
@@ -229,7 +230,7 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
   include/linux/apm_bios.h \
   include/uapi/linux/apm_bios.h \
   include/uapi/linux/ioctl.h \
-  arch/x86/include/generated/uapi/asm/ioctl.h \
+  arch/x86/include/uapi/asm/ioctl.h \
   include/asm-generic/ioctl.h \
   include/uapi/asm-generic/ioctl.h \
   include/linux/edd.h \
@@ -297,7 +298,7 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
   arch/x86/include/uapi/asm/sigcontext.h \
   arch/x86/include/asm/msr.h \
   arch/x86/include/asm/msr-index.h \
-  arch/x86/include/generated/uapi/asm/errno.h \
+  arch/x86/include/uapi/asm/errno.h \
   include/uapi/asm-generic/errno.h \
   include/uapi/asm-generic/errno-base.h \
   arch/x86/include/asm/cpumask.h \
@@ -314,17 +315,17 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
   arch/x86/include/asm/string_64.h \
     $(wildcard include/config/x86/mce.h) \
     $(wildcard include/config/arch/has/uaccess/flushcache.h) \
-  include/linux/atomic.h \
+  arch/x86/include/uapi/asm/msr.h \
   arch/x86/include/asm/atomic.h \
   arch/x86/include/asm/cmpxchg.h \
   arch/x86/include/asm/cmpxchg_64.h \
   arch/x86/include/asm/atomic64_64.h \
   include/asm-generic/atomic-instrumented.h \
+  include/linux/tracepoint-defs.h \
+  include/linux/atomic.h \
   include/linux/atomic-fallback.h \
     $(wildcard include/config/generic/atomic64.h) \
   include/asm-generic/atomic-long.h \
-  arch/x86/include/uapi/asm/msr.h \
-  include/linux/tracepoint-defs.h \
   arch/x86/include/asm/paravirt.h \
     $(wildcard include/config/debug/entry.h) \
   arch/x86/include/asm/frame.h \
@@ -356,7 +357,6 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
   arch/x86/include/asm/qrwlock.h \
   include/asm-generic/qrwlock.h \
   include/linux/rwlock.h \
-    $(wildcard include/config/preempt.h) \
   include/linux/spinlock_api_smp.h \
     $(wildcard include/config/inline/spin/lock.h) \
     $(wildcard include/config/inline/spin/lock/bh.h) \
@@ -392,7 +392,7 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
   include/linux/timex.h \
   include/uapi/linux/timex.h \
   include/uapi/linux/param.h \
-  arch/x86/include/generated/uapi/asm/param.h \
+  arch/x86/include/uapi/asm/param.h \
   include/asm-generic/param.h \
     $(wildcard include/config/hz.h) \
   include/uapi/asm-generic/param.h \
@@ -425,10 +425,10 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
     $(wildcard include/config/memcg.h) \
     $(wildcard include/config/memory/hotplug.h) \
     $(wildcard include/config/compaction.h) \
-    $(wildcard include/config/transparent/hugepage.h) \
     $(wildcard include/config/flat/node/mem/map.h) \
     $(wildcard include/config/page/extension.h) \
     $(wildcard include/config/deferred/struct/page/init.h) \
+    $(wildcard include/config/transparent/hugepage.h) \
     $(wildcard include/config/have/memory/present.h) \
     $(wildcard include/config/have/memoryless/nodes.h) \
     $(wildcard include/config/have/memblock/node/map.h) \
@@ -460,6 +460,7 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
     $(wildcard include/config/aio.h) \
     $(wildcard include/config/mmu/notifier.h) \
     $(wildcard include/config/arch/want/batched/unmap/tlb/flush.h) \
+    $(wildcard include/config/hmm/mirror.h) \
   include/linux/mm_types_task.h \
     $(wildcard include/config/split/ptlock/cpus.h) \
     $(wildcard include/config/arch/enable/split/pmd/ptlock.h) \
@@ -483,7 +484,6 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
   include/linux/rcutree.h \
   include/linux/rwsem.h \
     $(wildcard include/config/rwsem/spin/on/owner.h) \
-    $(wildcard include/config/debug/rwsems.h) \
   include/linux/osq_lock.h \
   include/linux/completion.h \
   include/linux/uprobes.h \
@@ -506,7 +506,6 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
     $(wildcard include/config/wq/watchdog.h) \
   include/linux/timer.h \
     $(wildcard include/config/debug/objects/timers.h) \
-    $(wildcard include/config/preempt/rt.h) \
     $(wildcard include/config/no/hz/common.h) \
   include/linux/ktime.h \
   include/linux/jiffies.h \
@@ -603,13 +602,11 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
   include/linux/topology.h \
     $(wildcard include/config/use/percpu/numa/node/id.h) \
     $(wildcard include/config/sched/smt.h) \
-  include/linux/arch_topology.h \
-    $(wildcard include/config/generic/arch/topology.h) \
+  include/linux/smp.h \
+    $(wildcard include/config/up/late/init.h) \
   include/linux/percpu.h \
     $(wildcard include/config/need/per/cpu/embed/first/chunk.h) \
     $(wildcard include/config/need/per/cpu/page/first/chunk.h) \
-  include/linux/smp.h \
-    $(wildcard include/config/up/late/init.h) \
   include/linux/sysctl.h \
     $(wildcard include/config/sysctl.h) \
   include/uapi/linux/sysctl.h \
@@ -645,6 +642,7 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
     $(wildcard include/config/ppc64.h) \
   include/linux/rbtree_latch.h \
   include/linux/error-injection.h \
+  arch/x86/include/asm/error-injection.h \
   include/asm-generic/error-injection.h \
   arch/x86/include/asm/module.h \
     $(wildcard include/config/unwinder/orc.h) \
@@ -676,7 +674,6 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
     $(wildcard include/config/modules/use/elf/rela.h) \
   arch/x86/include/asm/orc_types.h \
   include/linux/fs.h \
-    $(wildcard include/config/read/only/thp/for/fs.h) \
     $(wildcard include/config/fs/posix/acl.h) \
     $(wildcard include/config/security.h) \
     $(wildcard include/config/cgroup/writeback.h) \
@@ -684,9 +681,9 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
     $(wildcard include/config/file/locking.h) \
     $(wildcard include/config/fsnotify.h) \
     $(wildcard include/config/fs/encryption.h) \
-    $(wildcard include/config/fs/verity.h) \
     $(wildcard include/config/epoll.h) \
     $(wildcard include/config/quota.h) \
+    $(wildcard include/config/blk/dev/loop.h) \
     $(wildcard include/config/fs/dax.h) \
     $(wildcard include/config/block.h) \
     $(wildcard include/config/mandatory/file/locking.h) \
@@ -697,7 +694,6 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
   include/uapi/linux/kdev_t.h \
   include/linux/dcache.h \
   include/linux/rculist.h \
-    $(wildcard include/config/prove/rcu/list.h) \
   include/linux/rculist_bl.h \
   include/linux/list_bl.h \
   include/linux/bit_spinlock.h \
@@ -718,7 +714,7 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
   include/linux/fcntl.h \
     $(wildcard include/config/arch/32bit/off/t.h) \
   include/uapi/linux/fcntl.h \
-  arch/x86/include/generated/uapi/asm/fcntl.h \
+  arch/x86/include/uapi/asm/fcntl.h \
   include/uapi/asm-generic/fcntl.h \
   include/uapi/linux/fiemap.h \
   include/linux/migrate_mode.h \
@@ -746,7 +742,7 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
     $(wildcard include/config/blk/cgroup.h) \
     $(wildcard include/config/arch/has/scaled/cputime.h) \
     $(wildcard include/config/virt/cpu/accounting/gen.h) \
-    $(wildcard include/config/posix/cputimers.h) \
+    $(wildcard include/config/posix/timers.h) \
     $(wildcard include/config/keys.h) \
     $(wildcard include/config/sysvipc.h) \
     $(wildcard include/config/detect/hung/task.h) \
@@ -776,7 +772,7 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
   include/linux/ipc.h \
   include/linux/rhashtable-types.h \
   include/uapi/linux/ipc.h \
-  arch/x86/include/generated/uapi/asm/ipcbuf.h \
+  arch/x86/include/uapi/asm/ipcbuf.h \
   include/uapi/asm-generic/ipcbuf.h \
   arch/x86/include/uapi/asm/sembuf.h \
   include/linux/shm.h \
@@ -812,12 +808,11 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
   include/uapi/linux/unistd.h \
   include/linux/resource.h \
   include/uapi/linux/resource.h \
-  arch/x86/include/generated/uapi/asm/resource.h \
+  arch/x86/include/uapi/asm/resource.h \
   include/asm-generic/resource.h \
   include/uapi/asm-generic/resource.h \
   include/linux/latencytop.h \
   include/linux/sched/prio.h \
-  include/linux/sched/types.h \
   include/linux/signal_types.h \
     $(wildcard include/config/old/sigaction.h) \
   include/uapi/linux/signal.h \
@@ -828,9 +823,6 @@ deps_/home/ppw/Documents/LKM-practice/expfs/expfs.o := \
   include/uapi/asm-generic/siginfo.h \
   include/linux/task_io_accounting.h \
     $(wildcard include/config/task/io/accounting.h) \
-  include/linux/posix-timers.h \
-    $(wildcard include/config/posix/timers.h) \
-  include/linux/alarmtimer.h \
   include/uapi/linux/rseq.h \
   include/linux/sched/rt.h \
   include/linux/iocontext.h \

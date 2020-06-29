@@ -3,7 +3,7 @@
 #include <linux/init.h>
 #include <linux/kthread.h>
 #include <linux/sched.h>
-
+#include <linux/delay.h>
 #define AUTHOR        "Nachiket Kulkarni"
 #define DESCRIPTION    "Simple module that demonstrates creation of 2 kernel threads"
 
@@ -16,6 +16,9 @@ static int kthread_func(void *arg)
 * current->pid is the process of currently executing thread 
 */
     printk(KERN_INFO "I am thread: %s[PID = %d]\n", current->comm, current->pid);
+    // mdelay(5000);
+    while(1) schedule();
+    printk(KERN_INFO "end thread: %s[PID = %d]\n", current->comm, current->pid);
     return 0;
 }
 
@@ -39,11 +42,11 @@ static int __init init_func(void)
         return err;
     }
 
-    ts1 = kthread_run(kthread_func, NULL, "thread-1");
-    if (IS_ERR(ts1)) {
-        printk(KERN_INFO "ERROR: Cannot create thread ts1\n");
-        err = PTR_ERR(ts1);
-        ts1 = NULL;
+    ts2 = kthread_run(kthread_func, NULL, "thread-2");
+    if (IS_ERR(ts2)) {
+        printk(KERN_INFO "ERROR: Cannot create thread ts2\n");
+        err = PTR_ERR(ts2);
+        ts2 = NULL;
         return err;
     }
 
@@ -60,5 +63,5 @@ module_init(init_func);
 module_exit(exit_func);
 
 MODULE_AUTHOR(AUTHOR);
-MODULE_DESCRIPTION(MODULE_AUTHOR);
+// MODULE_DESCRIPTION(MODULE_AUTHOR);
 MODULE_LICENSE("GPL");

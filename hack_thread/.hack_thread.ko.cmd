@@ -1,0 +1,1 @@
+cmd_/home/ppw/Documents/LKM-practice/hack_thread/hack_thread.ko := ld -r -m elf_x86_64  -z max-page-size=0x200000  --build-id  -T ./scripts/module-common.lds -o /home/ppw/Documents/LKM-practice/hack_thread/hack_thread.ko /home/ppw/Documents/LKM-practice/hack_thread/hack_thread.o /home/ppw/Documents/LKM-practice/hack_thread/hack_thread.mod.o;  true

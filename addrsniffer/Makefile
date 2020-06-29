@@ -1,5 +1,6 @@
-obj-m += kern_thread.o
+obj-m += addrsniffer.o
 
+# Set the path to the Kernel build utils.
 KBUILD=/lib/modules/$(shell uname -r)/build/
  
 default:
@@ -10,3 +11,4 @@ clean:
 
 menuconfig:
 	$(MAKE) -C $(KBUILD) M=$(PWD) menuconfig
+

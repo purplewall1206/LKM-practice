@@ -1,2 +1,2 @@
-/home/ppw/Documents/modules/hello/hello.o
+/home/ppw/Documents/LKM-practice/hello/hello.o
 

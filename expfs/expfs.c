@@ -49,6 +49,8 @@ const struct inode_operations expfs_iops;
 const struct file_operations expfs_fops;
 
 const struct file_operations expfs_dir_fops;
+	
+DEFINE_SPINLOCK(expfs_lock);
 
 // 获取空文件块
 static int getblock (void)
@@ -99,6 +101,7 @@ static int expfs_iterate(struct file *filp, struct dir_context *ctx)
     struct expfs_direntry *entry;
     // int i;
     // struct super_block *sb = filp->f_inode->i_sb;
+    spin_lock(&expfs_lock);
     loff_t pos = filp->f_pos;
     if (pos) return 0;
 
@@ -123,6 +126,9 @@ static int expfs_iterate(struct file *filp, struct dir_context *ctx)
         filp->f_pos += sizeof(struct expfs_direntry);
         pos += sizeof(struct expfs_direntry);
     }
+
+    spin_unlock(&expfs_lock);
+
     return 0;
 }
 
@@ -138,6 +144,7 @@ ssize_t expfs_read (struct file *filp, char __user * buf, size_t len, loff_t *pp
 {
     struct expfs_fileblock *blk;
     char *buffer;
+    spin_lock(&expfs_lock);
     blk = (struct expfs_fileblock *) filp->f_path.dentry->d_inode->i_private;
     pr_info("%s : read file i_no %d\n", __func__, blk->index);
     if (*ppos >= blk->filesize) 
@@ -150,6 +157,7 @@ ssize_t expfs_read (struct file *filp, char __user * buf, size_t len, loff_t *pp
     }
 
     *ppos += len;
+    spin_unlock(&expfs_lock);
     return len;
 }
 
@@ -161,6 +169,7 @@ ssize_t expfs_write (struct file * filp, const char __user * buf, size_t len, lo
     int ret = 0;
     unsigned long p = *ppos;
     unsigned int count = len;
+    spin_lock(&expfs_lock);
     blk = (struct expfs_fileblock *) filp->f_path.dentry->d_inode->i_private;
     // pr_info("%s : write file i_no %d  %ld\n", __func__, blk->index, filp->f_path.dentry->d_inode->i_ino);
     // buffer = (char *) &blk->buffer[0];
@@ -181,6 +190,8 @@ ssize_t expfs_write (struct file * filp, const char __user * buf, size_t len, lo
         ret = count;
         blk->filesize = *ppos;
     }
+
+    spin_unlock(&expfs_lock);
 
     return ret;
 }
@@ -245,6 +256,8 @@ static int expfs_do_create(struct inode *dir, struct dentry *dentry, umode_t mod
     // ktime_get_ts64(&current_time);
     inode->i_atime = inode->i_ctime = inode->i_mtime = current_time(inode);
 
+    spin_lock(&expfs_lock);
+
     idx = getblock();
     blk = &blks[idx];
     inode->i_ino = idx;
@@ -274,14 +287,17 @@ static int expfs_do_create(struct inode *dir, struct dentry *dentry, umode_t mod
     inode_init_owner(inode, dir, mode);
     d_add(dentry, inode);
 
+    spin_unlock(&expfs_lock);
+
     return 0;
 }
 
 struct dentry * expfs_lookup (struct inode *parent_inode,struct dentry *child_dentry, unsigned int flags)
 {
-    struct super_block *sb;
+    struct super_block *sb = parent_inode->i_sb;
     struct expfs_fileblock *blk;
     struct expfs_direntry *entry;
+    
 
     blk = (struct expfs_fileblock *) parent_inode->i_private;
     pr_info("%s expfs lookup index %d, childnameaddr: %p\n", __func__, blk->index, child_dentry->d_name.name);
@@ -320,7 +336,7 @@ int expfs_rmdir (struct inode *dir,struct dentry *dentry)
     struct expfs_fileblock *pblk = dir->i_private;
     int ret = 0;
     // blk->used = 0;
-
+    spin_lock(&expfs_lock);
     // TODO
     // 1. check empty
     pr_info("%s parent blk-> index:%d, mode:%d, children:%d\n", __func__, blk->index, S_ISDIR(blk->mode), blk->dir_children);
@@ -344,9 +360,10 @@ int expfs_rmdir (struct inode *dir,struct dentry *dentry)
 
         ret = simple_rmdir(dir, dentry);
         pr_info("%s simple_rmdir ret:%d\n", __func__, ret);
-
+        spin_unlock(&expfs_lock);
     } else {
         pr_info("%s dir not empty\n", __func__);
+        spin_unlock(&expfs_lock);
         return -ENOTEMPTY;
     }
     // return simple_rmdir(dir, dentry);
@@ -360,7 +377,7 @@ int expfs_unlink(struct inode *dir, struct dentry *dentry)
     struct expfs_fileblock *pblk = dir->i_private;
     struct expfs_direntry *entry;
     pr_info("%s unlink : %s\n", __func__, dentry->d_name.name);
-
+    spin_lock(&expfs_lock);
     entry = (struct expfs_direntry *)&pblk->buffer[0];
     for (int i = 0;i < pblk->dir_children;i++) {
         if (!strcmp(entry[i].name, dentry->d_name.name)) {
@@ -372,6 +389,7 @@ int expfs_unlink(struct inode *dir, struct dentry *dentry)
         }
     }
     blk->used = 0;
+    spin_unlock(&expfs_lock);
     return simple_unlink(dir, dentry);
 }
 
@@ -387,7 +405,7 @@ int expfs_rename(struct inode *old_dir, struct dentry *old_dentry,
     pr_info("%s flags:%d old_dir:%ld/%d, old_dentry:%s\nnew_dir:%ld/%d, new_dentry:%s\n",
             __func__, flags, old_dir->i_ino, old_blk->index, old_dentry->d_name.name,
             new_dir->i_ino, new_blk->index, new_dentry->d_name.name);
-    
+    spin_lock(&expfs_lock);
     // delete old, add new
     for (int i = 0;i < old_blk->dir_children;i++) {
         if (!strcmp(old_entry[i].name, old_dentry->d_name.name)) {
@@ -407,10 +425,11 @@ int expfs_rename(struct inode *old_dir, struct dentry *old_dentry,
     strcpy(new_entry->name, new_dentry->d_name.name);
     // pr_info("%s new index:%d, name:%s\n", __func__, new_entry->index, new_entry->name);
 
-
+    spin_unlock(&expfs_lock);
     int ret = simple_rename(old_dir, old_dentry, new_dir, new_dentry, flags);
     WARN_ON(ret == -EINVAL);
     WARN_ON(ret == -ENOTEMPTY);
+    
     return ret;
 }
 
