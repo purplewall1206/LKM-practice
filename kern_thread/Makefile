@@ -1,6 +1,12 @@
 obj-m += kern_thread.o
 
-all:
-    make -C /lib/module/$(shell uname -r)/build M=$(PWD) modules
+KBUILD=/lib/modules/$(shell uname -r)/build/
+ 
+default:
+	$(MAKE) -C $(KBUILD) M=$(PWD) modules
+
 clean:
-    make -C /lib/module/$(shell uname -r)/build M=$(PWD) clean
+	$(MAKE) -C $(KBUILD) M=$(PWD) clean
+
+menuconfig:
+	$(MAKE) -C $(KBUILD) M=$(PWD) menuconfig
