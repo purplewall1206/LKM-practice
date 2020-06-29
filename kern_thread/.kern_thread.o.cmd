@@ -783,6 +783,9 @@ deps_/home/ppw/Documents/LKM-practice/kern_thread/kern_thread.o := \
     $(wildcard include/config/posix/timers.h) \
   include/linux/alarmtimer.h \
   include/uapi/linux/rseq.h \
+  include/linux/delay.h \
+  arch/x86/include/asm/delay.h \
+  include/asm-generic/delay.h \
 
 /home/ppw/Documents/LKM-practice/kern_thread/kern_thread.o: $(deps_/home/ppw/Documents/LKM-practice/kern_thread/kern_thread.o)
 
