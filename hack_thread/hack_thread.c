@@ -21,8 +21,8 @@ static int hack_thread_init(void)
     //     pr_info("%d:%s mm->%lx, active_mm->%lx\n", pids[i], task->comm, task->mm, task->active_mm);
     // }
     // task = pid_task(find_pid_ns(1, &init_pid_ns), PIDTYPE_PID);
-    // pr_info("%d:%s mm->%lx, active_mm->%lx\n", init_task.pid, init_task.comm, 
-    //             init_task.mm, init_task.active_mm);
+    pr_info("%d:%s mm->%lx, active_mm->%lx\n", init_task.pid, init_task.comm, 
+                init_task.mm, init_task.active_mm);
     for_each_process(task) {
         if (i++ < 10) {
             pr_info("%d:%s mm->%lx, active_mm->%lx\n", task->pid, task->comm, task->mm, task->active_mm);
