@@ -27,12 +27,10 @@ modules_install:
 
 insmod:
 	sudo insmod $(MODULE_NAME).ko procfs_rw_major=300
-	sudo mknod /dev/procfs_rw c 300 0
-	sudo chmod 666 /dev/procfs_rw
+
 
 rmmod:
 	sudo rmmod $(MODULE_NAME)
-	sudo rm -rf /dev/procfs_rw
 
 github:
 	cd $(ROOT) && make github
