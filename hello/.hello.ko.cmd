@@ -1,1 +1,0 @@
-cmd_/home/ppw/Documents/LKM-practice/hello/hello.ko := ld -r -m elf_x86_64  -z max-page-size=0x200000  --build-id  -T ./scripts/module-common.lds -o /home/ppw/Documents/LKM-practice/hello/hello.ko /home/ppw/Documents/LKM-practice/hello/hello.o /home/ppw/Documents/LKM-practice/hello/hello.mod.o;  true

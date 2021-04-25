@@ -1,1 +1,0 @@
-cmd_/home/ppw/Documents/LKM-practice/hack_thread/hack_thread.mod := { echo  /home/ppw/Documents/LKM-practice/hack_thread/hack_thread.o; echo; } > /home/ppw/Documents/LKM-practice/hack_thread/hack_thread.mod

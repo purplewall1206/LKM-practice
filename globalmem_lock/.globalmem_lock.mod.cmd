@@ -1,1 +1,0 @@
-cmd_/home/ppw/Documents/LKM-practice/globalmem_lock/globalmem_lock.mod := { echo  /home/ppw/Documents/LKM-practice/globalmem_lock/globalmem_lock.o; echo; } > /home/ppw/Documents/LKM-practice/globalmem_lock/globalmem_lock.mod

@@ -1,1 +1,0 @@
-cmd_/home/ppw/Documents/LKM-practice/kern_thread/kern_thread.mod := { echo  /home/ppw/Documents/LKM-practice/kern_thread/kern_thread.o; echo; } > /home/ppw/Documents/LKM-practice/kern_thread/kern_thread.mod

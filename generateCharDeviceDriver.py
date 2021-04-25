@@ -2,7 +2,7 @@ import sys
 import os
 
 # 创建工程名
-projectname = 'second'
+projectname = 'procfs_rw'
 
 code = '''
 #include <linux/init.h>
