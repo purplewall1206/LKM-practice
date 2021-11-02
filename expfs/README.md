@@ -59,7 +59,7 @@ cd mnt
 ## 第一阶段 内存文件系统阶段
 
 <<<<<<< HEAD
-### Attension 借鉴minixfs
+### Attention 借鉴minixfs
 
 之前思路有点想偏了，为啥要借鉴github上面的不成熟fs，直接借鉴Minixfs不香吗？
 
